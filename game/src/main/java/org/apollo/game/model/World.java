@@ -93,6 +93,11 @@ public final class World {
 	private final MobRepository<Player> playerRepository = new MobRepository<>(WorldConstants.MAXIMUM_PLAYERS);
 
 	/**
+	 * A {@link Map} of player usernames to their local {@link Set} of {@link GroundItem}s.
+	 */
+	private final Map<Long, Set<GroundItem>> groundItems = new HashMap<>(WorldConstants.MAXIMUM_PLAYERS);
+
+	/**
 	 * A {@link Map} of player usernames and the player objects.
 	 */
 	private final Map<Long, Player> players = new HashMap<>();
@@ -175,6 +180,15 @@ public final class World {
 	 */
 	public MobRepository<Player> getPlayerRepository() {
 		return playerRepository;
+	}
+
+	/**
+	 * Gets the {@link Map} of player usernames to their {@link Set} of {@link GroundItem}s
+	 *
+	 * @return The map.
+	 */
+	public Map<Long, Set<GroundItem>> getGroundItems() {
+		return groundItems;
 	}
 
 	/**
