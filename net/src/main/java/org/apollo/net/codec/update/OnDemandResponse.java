@@ -17,11 +17,6 @@ public final class OnDemandResponse {
 	private final ByteBuf chunkData;
 
 	/**
-	 * The chunk id.
-	 */
-	private final int chunkId;
-
-	/**
 	 * The file descriptor.
 	 */
 	private final FileDescriptor fileDescriptor;
@@ -36,13 +31,11 @@ public final class OnDemandResponse {
 	 *
 	 * @param fileDescriptor The file descriptor.
 	 * @param fileSize The file size.
-	 * @param chunkId The chunk id.
 	 * @param chunkData The chunk data.
 	 */
-	public OnDemandResponse(FileDescriptor fileDescriptor, int fileSize, int chunkId, ByteBuf chunkData) {
+	public OnDemandResponse(FileDescriptor fileDescriptor, int fileSize, ByteBuf chunkData) {
 		this.fileDescriptor = fileDescriptor;
 		this.fileSize = fileSize;
-		this.chunkId = chunkId;
 		this.chunkData = chunkData;
 	}
 
@@ -53,15 +46,6 @@ public final class OnDemandResponse {
 	 */
 	public ByteBuf getChunkData() {
 		return chunkData;
-	}
-
-	/**
-	 * Gets the chunk id.
-	 *
-	 * @return The chunk id.
-	 */
-	public int getChunkId() {
-		return chunkId;
 	}
 
 	/**

@@ -1,15 +1,8 @@
 package org.apollo;
 
-import java.io.IOException;
-import java.net.BindException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import com.google.common.base.Stopwatch;
+import com.oldscape.tool.cache.Cache;
+import com.oldscape.tool.cache.FileStore;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -20,13 +13,22 @@ import org.apollo.cache.IndexedFileSystem;
 import org.apollo.game.model.World;
 import org.apollo.game.plugin.PluginContext;
 import org.apollo.game.plugin.PluginManager;
-import org.apollo.game.release.r377.Release377;
+import org.apollo.game.release.r83.Release83;
 import org.apollo.game.session.ApolloHandler;
 import org.apollo.net.HttpChannelInitializer;
 import org.apollo.net.JagGrabChannelInitializer;
 import org.apollo.net.NetworkConstants;
 import org.apollo.net.ServiceChannelInitializer;
 import org.apollo.net.release.Release;
+
+import java.io.IOException;
+import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The core class of the Apollo server.
@@ -50,7 +52,7 @@ public final class Server {
 
 		try {
 			Server server = new Server();
-			server.init(args.length == 1 ? args[0] : Release377.class.getName());
+			server.init(args.length == 1 ? args[0] : Release83.class.getName());
 
 			SocketAddress service = new InetSocketAddress(NetworkConstants.SERVICE_PORT);
 			SocketAddress http = new InetSocketAddress(NetworkConstants.HTTP_PORT);
@@ -136,8 +138,8 @@ public final class Server {
 
 		World world = new World();
 		ServiceManager services = new ServiceManager(world);
-		IndexedFileSystem fs = new IndexedFileSystem(Paths.get("data/fs", Integer.toString(version)), true);
-		ServerContext context = new ServerContext(release, services, fs);
+		Cache cache = new Cache(FileStore.open(Paths.get("data/fs", Integer.toString(version)).toFile()));
+		ServerContext context = new ServerContext(release, services, cache);
 		ApolloHandler handler = new ApolloHandler(context);
 
 		ChannelInitializer<SocketChannel> service = new ServiceChannelInitializer(handler);
@@ -155,6 +157,7 @@ public final class Server {
 		PluginManager manager = new PluginManager(world, new PluginContext(context));
 		services.startAll();
 
+		IndexedFileSystem fs = new IndexedFileSystem(Paths.get("data/fs", "377"), true);
 		world.init(version, fs, manager);
 	}
 

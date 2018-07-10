@@ -13,6 +13,11 @@ public final class LoginResponse {
 	private final boolean flagged;
 
 	/**
+	 * The player index.
+	 */
+	private int index;
+
+	/**
 	 * The rights level.
 	 */
 	private final int rights;
@@ -24,15 +29,25 @@ public final class LoginResponse {
 
 	/**
 	 * Creates the login response.
-	 *
-	 * @param status The login status.
+	 *  @param status The login status.
+	 * @param index
 	 * @param rights The rights level.
 	 * @param flagged The flagged flag.
 	 */
-	public LoginResponse(int status, int rights, boolean flagged) {
+	public LoginResponse(int status, int index, int rights, boolean flagged) {
 		this.status = status;
+		this.index = index;
 		this.rights = rights;
 		this.flagged = flagged;
+	}
+
+	/**
+	 * Gets the index.
+	 *
+	 * @return The index.
+	 */
+	public int getIndex() {
+		return index;
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package org.apollo.game.model.area.collision;
 
 import com.google.common.base.Preconditions;
+import org.apollo.cache.def.ObjectDefinition;
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.area.Region;
@@ -72,7 +73,7 @@ public final class CollisionManager {
 		CollisionUpdate.Builder builder = new CollisionUpdate.Builder();
 		builder.type(CollisionUpdateType.ADDING);
 
-		for (Position tile : blocked) {
+		for (Position tile : new TreeSet<>(blocked)) {
 			int x = tile.getX(), y = tile.getY();
 			int height = tile.getHeight();
 
@@ -91,7 +92,12 @@ public final class CollisionManager {
 			CollisionUpdate.Builder objects = new CollisionUpdate.Builder();
 			objects.type(CollisionUpdateType.ADDING);
 
-			region.getEntities(STATIC_OBJECT, DYNAMIC_OBJECT).forEach(entity -> objects.object((GameObject) entity));
+			region.getEntities(STATIC_OBJECT, DYNAMIC_OBJECT).forEach(entity -> {
+
+				if(((GameObject) entity).getId() < ObjectDefinition.count()) {
+					objects.object((GameObject) entity);
+				}
+			});
 			apply(objects.build());
 		}
 	}
@@ -149,7 +155,7 @@ public final class CollisionManager {
 	 * {@code end} position using Bresenham's line algorithm.
 	 *
 	 * @param start The start position of the ray.
-	 * @param end The end position of the ray.
+	 * @param end   The end position of the ray.
 	 * @return {@code true} if an impenetrable object was hit, {@code false} otherwise.
 	 */
 	public boolean raycast(Position start, Position end) {
@@ -235,11 +241,11 @@ public final class CollisionManager {
 	/**
 	 * Apply a {@link CollisionUpdate} flag to a {@link CollisionMatrix}.
 	 *
-	 * @param type The type of update to apply.
+	 * @param type   The type of update to apply.
 	 * @param matrix The matrix the update is being applied to.
 	 * @param localX The local X position of the tile the flag represents.
 	 * @param localY The local Y position of the tile the flag represents.
-	 * @param flag The {@link CollisionFlag} to update.
+	 * @param flag   The {@link CollisionFlag} to update.
 	 */
 	private void flag(CollisionUpdateType type, CollisionMatrix matrix, int localX, int localY, CollisionFlag flag) {
 		if (type == CollisionUpdateType.ADDING) {
@@ -271,8 +277,8 @@ public final class CollisionManager {
 	 * Checks if the given {@link EntityType} can traverse to the next tile from {@code position} in the given
 	 * {@code direction}.
 	 *
-	 * @param position The current position of the entity.
-	 * @param type The type of the entity.
+	 * @param position  The current position of the entity.
+	 * @param type      The type of the entity.
 	 * @param direction The direction the entity is travelling.
 	 * @return {@code true} if next tile is traversable, {@code false} otherwise.
 	 */

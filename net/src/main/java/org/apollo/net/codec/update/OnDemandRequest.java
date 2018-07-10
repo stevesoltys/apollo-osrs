@@ -28,7 +28,12 @@ public final class OnDemandRequest implements Comparable<OnDemandRequest> {
 		 * Low priority - used when a file is not required urgently (such as when serving the rest of the cache whilst
 		 * the player is in-game).
 		 */
-		LOW(2);
+		LOW(2),
+
+		/**
+		 * Ignore the request for this file.
+		 */
+		IGNORE(3);
 
 		/**
 		 * Converts the integer value to a Priority.
@@ -44,7 +49,8 @@ public final class OnDemandRequest implements Comparable<OnDemandRequest> {
 				case 1:
 					return MEDIUM;
 				case 2:
-					return LOW;
+				case 3:
+					return IGNORE;
 				default:
 					throw new IllegalArgumentException("Priority out of range - received " + value + ".");
 			}
@@ -99,8 +105,7 @@ public final class OnDemandRequest implements Comparable<OnDemandRequest> {
 
 	/**
 	 * Creates the OnDemandRequest.
-	 *
-	 * @param descriptor The {@link FileDescriptor}.
+	 *  @param descriptor The {@link FileDescriptor}.
 	 * @param priority The {@link Priority}.
 	 */
 	public OnDemandRequest(FileDescriptor descriptor, Priority priority) {

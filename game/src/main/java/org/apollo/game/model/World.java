@@ -1,8 +1,5 @@
 package org.apollo.game.model;
 
-import java.util.*;
-import java.util.logging.Logger;
-
 import com.google.common.base.Preconditions;
 import org.apollo.Service;
 import org.apollo.cache.IndexedFileSystem;
@@ -19,11 +16,7 @@ import org.apollo.game.model.area.Region;
 import org.apollo.game.model.area.RegionRepository;
 import org.apollo.game.model.area.collision.CollisionManager;
 import org.apollo.game.model.area.collision.CollisionUpdateListener;
-import org.apollo.game.model.entity.Entity;
-import org.apollo.game.model.entity.EntityType;
-import org.apollo.game.model.entity.MobRepository;
-import org.apollo.game.model.entity.Npc;
-import org.apollo.game.model.entity.Player;
+import org.apollo.game.model.entity.*;
 import org.apollo.game.model.event.Event;
 import org.apollo.game.model.event.EventListener;
 import org.apollo.game.model.event.EventListenerChainSet;
@@ -32,6 +25,9 @@ import org.apollo.game.scheduling.ScheduledTask;
 import org.apollo.game.scheduling.Scheduler;
 import org.apollo.game.scheduling.impl.NpcMovementTask;
 import org.apollo.util.NameUtil;
+
+import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * The world class is a singleton which contains objects like the {@link MobRepository} for players and NPCs. It should
@@ -238,7 +234,7 @@ public final class World {
 		secondStageDecoder.block();
 
 		// Build collision matrices for the first time
-		collisionManager.build(false);
+//		collisionManager.build(false);
 		regions.addRegionListener(new CollisionUpdateListener(collisionManager));
 
 		npcMovement = new NpcMovementTask(collisionManager); // Must be exactly here because of ordering issues.

@@ -3,14 +3,13 @@ package org.apollo.net.codec.handshake;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-
-import java.util.List;
-import java.util.logging.Logger;
-
 import org.apollo.net.codec.login.LoginDecoder;
 import org.apollo.net.codec.login.LoginEncoder;
 import org.apollo.net.codec.update.UpdateDecoder;
 import org.apollo.net.codec.update.UpdateEncoder;
+
+import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * A {@link ByteToMessageDecoder} which decodes the handshake and makes changes to the pipeline as appropriate for the
@@ -37,14 +36,14 @@ public final class HandshakeDecoder extends ByteToMessageDecoder {
 			case HandshakeConstants.SERVICE_GAME:
 				ctx.pipeline().addFirst("loginEncoder", new LoginEncoder());
 				ctx.pipeline().addAfter("handshakeDecoder", "loginDecoder", new LoginDecoder());
+
+				ByteBuf buf = ctx.alloc().buffer(1).writeByte(0);
+				ctx.channel().writeAndFlush(buf);
 				break;
 
 			case HandshakeConstants.SERVICE_UPDATE:
 				ctx.pipeline().addFirst("updateEncoder", new UpdateEncoder());
 				ctx.pipeline().addBefore("handler", "updateDecoder", new UpdateDecoder());
-
-				ByteBuf buf = ctx.alloc().buffer(8).writeLong(0);
-				ctx.channel().writeAndFlush(buf);
 				break;
 
 			default:
@@ -53,8 +52,13 @@ public final class HandshakeDecoder extends ByteToMessageDecoder {
 				return;
 		}
 
-		ctx.pipeline().remove(this);
 		out.add(new HandshakeMessage(id));
+
+		if (buffer.isReadable()) {
+			out.add(buffer.readBytes(buffer.readableBytes()));
+		}
+
+		ctx.pipeline().remove(this);
 	}
 
 }

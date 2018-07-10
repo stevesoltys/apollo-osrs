@@ -1,15 +1,14 @@
 package org.apollo.cache.map;
 
+import org.apollo.cache.IndexedFileSystem;
+import org.apollo.cache.archive.Archive;
+import org.apollo.cache.archive.ArchiveEntry;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apollo.cache.IndexedFileSystem;
-import org.apollo.cache.archive.Archive;
-import org.apollo.cache.archive.ArchiveEntry;
-import org.apollo.cache.map.MapIndex;
 
 /**
  * Decodes {@link MapIndex}s from the {@link IndexedFileSystem}.
@@ -46,6 +45,7 @@ public final class MapIndexDecoder implements Runnable {
 
 		ByteBuffer buffer = entry.getBuffer();
 		int count = buffer.capacity() / (3 * Short.BYTES + Byte.BYTES);
+//		int count = buffer.getShort() & 0xFFFF;
 
 		for (int times = 0; times < count; times++) {
 			int id = buffer.getShort() & 0xFFFF;

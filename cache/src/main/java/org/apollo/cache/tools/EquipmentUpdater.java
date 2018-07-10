@@ -1,16 +1,15 @@
 package org.apollo.cache.tools;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Paths;
-
+import com.google.common.base.Preconditions;
 import org.apollo.cache.IndexedFileSystem;
 import org.apollo.cache.decoder.ItemDefinitionDecoder;
 import org.apollo.cache.def.ItemDefinition;
 import org.apollo.util.tools.EquipmentConstants;
 
-import com.google.common.base.Preconditions;
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.nio.file.Paths;
 
 /**
  * A tool for updating the equipment data.
@@ -949,6 +948,8 @@ public final class EquipmentUpdater {
 		} else if (name.endsWith("godsword")) {
 			return true;
 		} else if (name.equals("Saradomin sword")) {
+			return true;
+		} else if (name.equals("Twisted bow")) {
 			return true;
 		}
 

@@ -1,15 +1,9 @@
 package org.apollo.game.session;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-
-import java.io.IOException;
-import java.util.Optional;
-
 import org.apollo.ServerContext;
 import org.apollo.game.io.player.PlayerLoaderResponse;
-import org.apollo.game.model.World.RegistrationStatus;
 import org.apollo.game.model.entity.Player;
 import org.apollo.game.service.GameService;
 import org.apollo.game.service.LoginService;
@@ -22,6 +16,9 @@ import org.apollo.net.codec.login.LoginRequest;
 import org.apollo.net.codec.login.LoginResponse;
 import org.apollo.net.release.Release;
 import org.apollo.util.security.IsaacRandomPair;
+
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * A login session.
@@ -88,7 +85,7 @@ public final class LoginSession extends Session {
 	 */
 	public void sendLoginFailure(int status) {
 		boolean flagged = false;
-		LoginResponse response = new LoginResponse(status, 0, flagged);
+		LoginResponse response = new LoginResponse(status, -1, 0, flagged);
 		channel.writeAndFlush(response).addListener(ChannelFutureListener.CLOSE);
 	}
 
@@ -106,7 +103,7 @@ public final class LoginSession extends Session {
 		player.setSession(session);
 
 		int rights = player.getPrivilegeLevel().toInteger();
-		channel.writeAndFlush(new LoginResponse(LoginConstants.STATUS_OK, rights, flagged));
+		channel.writeAndFlush(new LoginResponse(LoginConstants.STATUS_OK, player.getIndex(), rights, flagged));
 
 		Release release = context.getRelease();
 

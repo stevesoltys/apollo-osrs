@@ -2,13 +2,13 @@ package org.apollo.net.update;
 
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpRequest;
+import org.apollo.net.codec.jaggrab.JagGrabRequest;
+import org.apollo.net.codec.update.OnDemandRequest;
+import org.apollo.net.codec.update.VersionCheckRequest;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-
-import org.apollo.net.codec.jaggrab.JagGrabRequest;
-import org.apollo.net.codec.update.OnDemandRequest;
 
 /**
  * Dispatches update requests to worker threads.
@@ -26,6 +26,8 @@ public final class UpdateDispatcher {
 	 * A queue for pending 'on-demand' requests.
 	 */
 	private final BlockingQueue<ComparableChannelRequest<OnDemandRequest>> demand = new PriorityBlockingQueue<>();
+
+	private final BlockingQueue<ChannelRequest<VersionCheckRequest>> versionCheckQueue = new LinkedBlockingQueue<>();
 
 	/**
 	 * A queue for pending HTTP requests.
@@ -76,6 +78,13 @@ public final class UpdateDispatcher {
 		demand.add(new ComparableChannelRequest<>(channel, request));
 	}
 
+	public void dispatch(Channel channel, VersionCheckRequest request) {
+		if (versionCheckQueue.size() >= MAXIMUM_QUEUE_SIZE) {
+			channel.close();
+		}
+		versionCheckQueue.add(new ChannelRequest<>(channel, request));
+	}
+
 	/**
 	 * Gets the next HTTP request from the queue, blocking if none are available.
 	 *
@@ -106,4 +115,8 @@ public final class UpdateDispatcher {
 		return demand.take();
 	}
 
+
+	ChannelRequest<VersionCheckRequest> nextVersionCheckRequest() throws InterruptedException {
+		return versionCheckQueue.take();
+	}
 }

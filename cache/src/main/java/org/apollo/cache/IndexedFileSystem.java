@@ -322,7 +322,7 @@ public final class IndexedFileSystem implements Closeable {
 				indexFile.seek(position);
 				indexFile.readFully(buffer);
 			} else {
-				throw new FileNotFoundException("Could not find find index.");
+//				throw new FileNotFoundException("Could not find find index.");
 			}
 		}
 

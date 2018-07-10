@@ -1,16 +1,11 @@
 package org.apollo.net.codec.login;
 
+import com.google.common.net.InetAddresses;
+import com.oldscape.tool.util.XTEA;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-
-import java.math.BigInteger;
-import java.net.InetSocketAddress;
-import java.security.SecureRandom;
-import java.util.List;
-
-import org.apollo.cache.FileSystemConstants;
 import org.apollo.net.NetworkConstants;
 import org.apollo.util.BufferUtil;
 import org.apollo.util.StatefulFrameDecoder;
@@ -18,7 +13,10 @@ import org.apollo.util.security.IsaacRandom;
 import org.apollo.util.security.IsaacRandomPair;
 import org.apollo.util.security.PlayerCredentials;
 
-import com.google.common.net.InetAddresses;
+import java.math.BigInteger;
+import java.net.InetSocketAddress;
+import java.security.SecureRandom;
+import java.util.List;
 
 /**
  * A {@link StatefulFrameDecoder} which decodes the login request frames.
@@ -56,7 +54,7 @@ public final class LoginDecoder extends StatefulFrameDecoder<LoginDecoderState> 
 	 * Creates the login decoder with the default initial state.
 	 */
 	public LoginDecoder() {
-		super(LoginDecoderState.LOGIN_HANDSHAKE);
+		super(LoginDecoderState.LOGIN_HEADER);
 	}
 
 	@Override
@@ -79,9 +77,9 @@ public final class LoginDecoder extends StatefulFrameDecoder<LoginDecoderState> 
 	/**
 	 * Decodes in the handshake state.
 	 *
-	 * @param ctx The channel handler context.
+	 * @param ctx    The channel handler context.
 	 * @param buffer The buffer.
-	 * @param out The {@link List} of objects to pass forward through the pipeline.
+	 * @param out    The {@link List} of objects to pass forward through the pipeline.
 	 */
 	private void decodeHandshake(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) {
 		if (buffer.isReadable()) {
@@ -101,9 +99,9 @@ public final class LoginDecoder extends StatefulFrameDecoder<LoginDecoderState> 
 	/**
 	 * Decodes in the header state.
 	 *
-	 * @param ctx The channel handler context.
+	 * @param ctx    The channel handler context.
 	 * @param buffer The buffer.
-	 * @param out The {@link List} of objects to pass forward through the pipeline.
+	 * @param out    The {@link List} of objects to pass forward through the pipeline.
 	 */
 	private void decodeHeader(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) {
 		if (buffer.readableBytes() >= 2) {
@@ -115,67 +113,76 @@ public final class LoginDecoder extends StatefulFrameDecoder<LoginDecoderState> 
 			}
 
 			reconnecting = type == LoginConstants.TYPE_RECONNECTION;
-			loginLength = buffer.readUnsignedByte();
+			loginLength = buffer.readShort();
 
 			setState(LoginDecoderState.LOGIN_PAYLOAD);
 		}
 	}
 
+	public static String getRS2String(ByteBuf buf) {
+		StringBuilder bldr = new StringBuilder();
+		byte b;
+		while (buf.isReadable() && (b = buf.readByte()) != 0) {
+			bldr.append((char) b);
+		}
+		return bldr.toString();
+	}
+
+
 	/**
 	 * Decodes in the payload state.
 	 *
-	 * @param ctx The channel handler context.
+	 * @param ctx    The channel handler context.
 	 * @param buffer The buffer.
-	 * @param out The {@link List} of objects to pass forward through the pipeline.
+	 * @param out    The {@link List} of objects to pass forward through the pipeline.
 	 */
 	private void decodePayload(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) {
 		if (buffer.readableBytes() >= loginLength) {
 			ByteBuf payload = buffer.readBytes(loginLength);
-			int version = 255 - payload.readUnsignedByte();
+			int version = payload.readInt();
 
-			int release = payload.readUnsignedShort();
+			int rsaBlockSize = payload.readUnsignedShort();
+			byte[] rsaBlockBytes = new byte[rsaBlockSize];
+			payload.readBytes(rsaBlockBytes);
+			ByteBuf rBuf = Unpooled.wrappedBuffer(new BigInteger(rsaBlockBytes)
+				.modPow(NetworkConstants.RSA_EXPONENT, NetworkConstants.RSA_MODULUS).toByteArray());
 
-			int memoryStatus = payload.readUnsignedByte();
-			if (memoryStatus != 0 && memoryStatus != 1) {
+			int blockMagic = rBuf.readUnsignedByte();
+			if (blockMagic != 1) {
 				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
 				return;
 			}
 
-			boolean lowMemory = memoryStatus == 1;
+			int blockType = rBuf.readUnsignedByte();
 
-			int[] crcs = new int[FileSystemConstants.ARCHIVE_COUNT];
-			for (int index = 0; index < 9; index++) {
-				crcs[index] = payload.readInt();
+			int[] cKeys = new int[4];
+
+			for (int i = 0; i < cKeys.length; i++) {
+				cKeys[i] = rBuf.readInt();
 			}
 
-			int length = payload.readUnsignedByte();
-			if (length != loginLength - 41) {
-				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
-				return;
+			if (blockType == 2) {
+				rBuf.readerIndex(rBuf.readerIndex() + 8);
+
+			} else if (blockType == 3 || blockType == 1) {
+				rBuf.readUnsignedMedium();
+				rBuf.readerIndex(rBuf.readerIndex() + 5);
+
+			} else if (blockType == 0) {
+				rBuf.readInt();
+				rBuf.readerIndex(rBuf.readerIndex() + 4);
 			}
 
-			ByteBuf secure = payload.readBytes(length);
+			String password = BufferUtil.readStringNew(rBuf);
 
-			BigInteger value = new BigInteger(secure.array());
-			value = value.modPow(NetworkConstants.RSA_EXPONENT, NetworkConstants.RSA_MODULUS);
-			secure = Unpooled.wrappedBuffer(value.toByteArray());
+			int xteaBlockSize = payload.readableBytes();
+			byte[] xteaBlockBytes = new byte[xteaBlockSize];
+			payload.readBytes(xteaBlockBytes);
+			XTEA.decrypt(xteaBlockBytes, 0, xteaBlockBytes.length, cKeys);
+			ByteBuf xBuf = Unpooled.wrappedBuffer(xteaBlockBytes);
 
-			int id = secure.readUnsignedByte();
-			if (id != 10) {
-				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
-				return;
-			}
+			String username = BufferUtil.readStringNew(xBuf);
 
-			long clientSeed = secure.readLong();
-			long reportedSeed = secure.readLong();
-			if (reportedSeed != serverSeed) {
-				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
-				return;
-			}
-
-			int uid = secure.readInt();
-			String username = BufferUtil.readString(secure);
-			String password = BufferUtil.readString(secure);
 			InetSocketAddress socketAddress = (InetSocketAddress) ctx.channel().remoteAddress();
 			String hostAddress = InetAddresses.toAddrString(socketAddress.getAddress());
 
@@ -184,30 +191,125 @@ public final class LoginDecoder extends StatefulFrameDecoder<LoginDecoderState> 
 				return;
 			}
 
-			int[] seed = new int[4];
-			seed[0] = (int) (clientSeed >> 32);
-			seed[1] = (int) clientSeed;
-			seed[2] = (int) (serverSeed >> 32);
-			seed[3] = (int) serverSeed;
+			int memoryStatus = xBuf.readUnsignedByte();// low mem
+			boolean lowMemory = memoryStatus == 1;
 
-			IsaacRandom decodingRandom = new IsaacRandom(seed);
-			for (int index = 0; index < seed.length; index++) {
-				seed[index] += 50;
+			xBuf.readUnsignedShort();// width
+			xBuf.readUnsignedShort();// height
+
+			byte[] random = new byte[24];
+			for (int i = 0; i < random.length; i++) {
+				random[i] = xBuf.readByte();
 			}
 
-			IsaacRandom encodingRandom = new IsaacRandom(seed);
+			String token = BufferUtil.readStringNew(xBuf);
+			xBuf.readInt();// affiliate id
 
-			PlayerCredentials credentials = new PlayerCredentials(username, password, usernameHash, uid, hostAddress);
+			xBuf.readUnsignedByte();// 6
+			xBuf.readUnsignedByte();// OS Type
+			xBuf.readUnsignedByte();// 64-Bit OS
+			xBuf.readUnsignedByte();// OS Version
+			xBuf.readUnsignedByte();// Java Vendor
+			xBuf.readUnsignedByte();// Something todo with Java
+			xBuf.readUnsignedByte();// Something todo with Java
+			xBuf.readUnsignedByte();
+			xBuf.readUnsignedByte();// 0
+			xBuf.readUnsignedShort();// Max Mem
+			xBuf.readUnsignedByte();// Availible Processors
+			xBuf.readUnsignedMedium();// 0
+			xBuf.readUnsignedShort();// 0
+			BufferUtil.readStringNew(xBuf);// usually null
+			BufferUtil.readStringNew(xBuf);// usually null
+			BufferUtil.readStringNew(xBuf);// usually null
+			BufferUtil.readStringNew(xBuf);// usually null
+			xBuf.readUnsignedByte();
+			xBuf.readUnsignedShort();
+			BufferUtil.readStringNew(xBuf);// usually null
+			BufferUtil.readStringNew(xBuf);// usually null
+			xBuf.readUnsignedByte();
+			xBuf.readUnsignedByte();
+
+			int[] var = new int[3];
+			for (int i = 0; i < var.length; i++)
+				var[i] = xBuf.readInt();
+
+			xBuf.readInt();
+			xBuf.readUnsignedByte();
+
+			int[] crc = new int[16];// xBuf.readableBytes() / 4
+			for (int i = 0; i < crc.length; i++)
+				crc[i] = xBuf.readInt();
+
+			int[] sKeys = new int[cKeys.length];
+			for (int i = 0; i < sKeys.length; i++)
+				sKeys[i] = cKeys[i] + 50;
+//
+//			String username =  org.apollo.util.BufferUtil.readStringNew(xBuf);
+
+//			int[] crcs = new int[FileSystemConstants.ARCHIVE_COUNT];
+//			for (int index = 0; index < 9; index++) {
+//				crcs[index] = payload.readInt();
+//			}
+
+//			int length = payload.readUnsignedByte();
+//			if (length != loginLength - 41) {
+//				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
+//				return;
+//			}
+//
+//			ByteBuf secure = payload.readBytes(length);
+//
+//			BigInteger value = new BigInteger(secure.array());
+//			value = value.modPow(NetworkConstants.RSA_EXPONENT, NetworkConstants.RSA_MODULUS);
+//			secure = Unpooled.wrappedBuffer(value.toByteArray());
+//
+//			int id = secure.readUnsignedByte();
+//			if (id != 10) {
+//				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
+//				return;
+//			}
+//
+//			long clientSeed = secure.readLong();
+//			long reportedSeed = secure.readLong();
+//			if (reportedSeed != serverSeed) {
+//				writeResponseCode(ctx, LoginConstants.STATUS_LOGIN_SERVER_REJECTED_SESSION);
+//				return;
+//			}
+//
+//			int uid = secure.readInt();
+//			String username = BufferUtil.readString(secure);
+//			String password = BufferUtil.readString(secure);
+//
+//			int[] seed = new int[4];
+//			seed[0] = (int) (clientSeed >> 32);
+//			seed[1] = (int) clientSeed;
+//			seed[2] = (int) (serverSeed >> 32);
+//			seed[3] = (int) serverSeed;
+//
+//			IsaacRandom decodingRandom = new IsaacRandom(seed);
+//			for (int index = 0; index < seed.length; index++) {
+//				seed[index] += 50;
+//			}
+//
+//			IsaacRandom encodingRandom = new IsaacRandom(seed);
+//
+//
+//			IsaacRandomPair randomPair = new IsaacRandomPair(encodingRandom, decodingRandom);
+
+			IsaacRandom decodingRandom = new IsaacRandom(cKeys);
+			IsaacRandom encodingRandom = new IsaacRandom(sKeys);
+
+			PlayerCredentials credentials = new PlayerCredentials(username, password, usernameHash, -1, hostAddress);
 			IsaacRandomPair randomPair = new IsaacRandomPair(encodingRandom, decodingRandom);
 
-			out.add(new LoginRequest(credentials, randomPair, reconnecting, lowMemory, release, crcs, version));
+			out.add(new LoginRequest(credentials, randomPair, reconnecting, lowMemory, -1, crc, version));
 		}
 	}
 
 	/**
 	 * Writes a response code to the client and closes the current channel.
 	 *
-	 * @param ctx The context of the channel handler.
+	 * @param ctx      The context of the channel handler.
 	 * @param response The response code to write.
 	 */
 	private void writeResponseCode(ChannelHandlerContext ctx, int response) {

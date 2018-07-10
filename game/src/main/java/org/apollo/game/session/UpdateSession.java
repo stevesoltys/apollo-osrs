@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import org.apollo.ServerContext;
 import org.apollo.net.codec.jaggrab.JagGrabRequest;
 import org.apollo.net.codec.update.OnDemandRequest;
+import org.apollo.net.codec.update.VersionCheckRequest;
 import org.apollo.net.update.UpdateDispatcher;
 
 /**
@@ -42,6 +43,8 @@ public final class UpdateSession extends Session {
 
 		if (message instanceof OnDemandRequest) {
 			dispatcher.dispatch(getChannel(), (OnDemandRequest) message);
+		} else if (message instanceof VersionCheckRequest) {
+			dispatcher.dispatch(getChannel(), (VersionCheckRequest) message);
 		} else if (message instanceof JagGrabRequest) {
 			dispatcher.dispatch(getChannel(), (JagGrabRequest) message);
 		} else if (message instanceof HttpRequest) {

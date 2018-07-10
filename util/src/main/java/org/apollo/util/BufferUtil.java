@@ -55,6 +55,21 @@ public final class BufferUtil {
 	}
 
 	/**
+	 * Reads a string from the specified {@link ByteBuf}.
+	 *
+	 * @param buffer The buffer.
+	 * @return The string.
+	 */
+	public static String readStringNew(ByteBuf buffer) {
+		StringBuilder builder = new StringBuilder();
+		int character;
+		while (buffer.isReadable() && (character = buffer.readUnsignedByte()) != 0) {
+			builder.append((char) character);
+		}
+		return builder.toString();
+	}
+
+	/**
 	 * Reads a 24-bit medium integer from the specified {@link ByteBuffer}s current position and increases the buffers
 	 * position by 3.
 	 *

@@ -1,34 +1,13 @@
 package org.apollo.game.model.entity;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-import org.apollo.game.message.impl.ConfigMessage;
-import org.apollo.game.message.impl.IdAssignmentMessage;
-import org.apollo.game.message.impl.IgnoreListMessage;
-import org.apollo.game.message.impl.LogoutMessage;
-import org.apollo.game.message.impl.SendFriendMessage;
-import org.apollo.game.message.impl.ServerChatMessage;
-import org.apollo.game.message.impl.SetWidgetTextMessage;
-import org.apollo.game.message.impl.SwitchTabInterfaceMessage;
-import org.apollo.game.message.impl.UpdateRunEnergyMessage;
+import org.apollo.game.message.impl.*;
 import org.apollo.game.model.Appearance;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 import org.apollo.game.model.WorldConstants;
-import org.apollo.game.model.entity.attr.Attribute;
-import org.apollo.game.model.entity.attr.AttributeDefinition;
-import org.apollo.game.model.entity.attr.AttributeMap;
-import org.apollo.game.model.entity.attr.AttributePersistence;
-import org.apollo.game.model.entity.attr.NumericalAttribute;
-import org.apollo.game.model.entity.attr.BooleanAttribute;
+import org.apollo.game.model.entity.attr.*;
 import org.apollo.game.model.entity.obj.DynamicGameObject;
 import org.apollo.game.model.entity.setting.MembershipStatus;
 import org.apollo.game.model.entity.setting.PrivacyState;
@@ -41,13 +20,8 @@ import org.apollo.game.model.inter.InterfaceListener;
 import org.apollo.game.model.inter.InterfaceSet;
 import org.apollo.game.model.inter.bank.BankConstants;
 import org.apollo.game.model.inter.bank.BankInterfaceListener;
-import org.apollo.game.model.inv.AppearanceInventoryListener;
-import org.apollo.game.model.inv.FullInventoryListener;
-import org.apollo.game.model.inv.Inventory;
+import org.apollo.game.model.inv.*;
 import org.apollo.game.model.inv.Inventory.StackMode;
-import org.apollo.game.model.inv.InventoryConstants;
-import org.apollo.game.model.inv.InventoryListener;
-import org.apollo.game.model.inv.SynchronizationInventoryListener;
 import org.apollo.game.model.skill.LevelUpSkillListener;
 import org.apollo.game.model.skill.SynchronizationSkillListener;
 import org.apollo.game.session.GameSession;
@@ -55,6 +29,9 @@ import org.apollo.game.sync.block.SynchronizationBlock;
 import org.apollo.net.message.Message;
 import org.apollo.util.CollectionUtil;
 import org.apollo.util.security.PlayerCredentials;
+
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A {@link Mob} that a user is controlling.
@@ -738,8 +715,10 @@ public final class Player extends Mob {
 	 * Sends the initial messages.
 	 */
 	public void sendInitialMessages() {
-		updateAppearance();
+		send(new RegionChangeMessage(position));
+		send(new SetWidgetPaneMessage(548));
 		send(new IdAssignmentMessage(index, members));
+		updateAppearance();
 		sendMessage("Welcome to RuneScape.");
 
 		if (isMuted()) {
@@ -751,10 +730,10 @@ public final class Player extends Mob {
 			send(new SwitchTabInterfaceMessage(tab, tabs[tab]));
 		}
 
-		inventory.forceRefresh();
-		equipment.forceRefresh();
-		bank.forceRefresh();
-		skillSet.forceRefresh();
+//		inventory.forceRefresh();
+//		equipment.forceRefresh();
+//		bank.forceRefresh();
+//		skillSet.forceRefresh();
 
 		world.submit(new LoginEvent(this));
 	}

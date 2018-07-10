@@ -1,18 +1,16 @@
 package org.apollo.net.codec.game;
 
+import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-
-import java.util.List;
-
 import org.apollo.net.meta.PacketMetaData;
 import org.apollo.net.meta.PacketType;
 import org.apollo.net.release.Release;
 import org.apollo.util.StatefulFrameDecoder;
 import org.apollo.util.security.IsaacRandom;
 
-import com.google.common.base.Preconditions;
+import java.util.List;
 
 /**
  * A {@link StatefulFrameDecoder} that decodes {@link GamePacket}s.
@@ -98,7 +96,7 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 	private void decodeOpcode(ByteBuf buffer, List<Object> out) {
 		if (buffer.isReadable()) {
 			int encryptedOpcode = buffer.readUnsignedByte();
-			opcode = encryptedOpcode - random.nextInt() & 0xFF;
+			opcode = encryptedOpcode;
 
 			PacketMetaData metaData = release.getIncomingPacketMetaData(opcode);
 			Preconditions.checkNotNull(metaData, "Illegal opcode: " + opcode + ".");

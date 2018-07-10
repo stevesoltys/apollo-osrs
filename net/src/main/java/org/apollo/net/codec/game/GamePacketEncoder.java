@@ -31,14 +31,14 @@ public final class GamePacketEncoder extends MessageToByteEncoder<GamePacket> {
 	protected void encode(ChannelHandlerContext ctx, GamePacket packet, ByteBuf out) throws Exception {
 		PacketType type = packet.getType();
 		int payloadLength = packet.getLength();
-		
+
 		if (type == PacketType.VARIABLE_BYTE && payloadLength >= 256) {
 			throw new Exception("Payload too long for variable byte packet.");
 		} else if (type == PacketType.VARIABLE_SHORT && payloadLength >= 65_536) {
 			throw new Exception("Payload too long for variable short packet.");
 		}
 
-		out.writeByte(packet.getOpcode() + random.nextInt() & 0xFF);
+		out.writeByte(packet.getOpcode());
 		if (type == PacketType.VARIABLE_BYTE) {
 			out.writeByte(payloadLength);
 		} else if (type == PacketType.VARIABLE_SHORT) {

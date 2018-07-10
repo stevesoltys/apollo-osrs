@@ -1,35 +1,39 @@
 package org.apollo.net.codec.update;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
+import org.apollo.cache.FileDescriptor;
 
 import java.util.List;
-
-import org.apollo.cache.FileDescriptor;
 
 /**
  * A {@link MessageToMessageEncoder} for the 'on-demand' protocol.
  *
  * @author Graham
  */
-public final class UpdateEncoder extends MessageToMessageEncoder<OnDemandResponse> {
+public final class UpdateEncoder extends MessageToMessageEncoder<Object> {
 
 	@Override
-	protected void encode(ChannelHandlerContext ctx, OnDemandResponse response, List<Object> out) {
-		FileDescriptor descriptor = response.getFileDescriptor();
-		int fileSize = response.getFileSize();
-		int chunkId = response.getChunkId();
-		ByteBuf chunkData = response.getChunkData();
+	protected void encode(ChannelHandlerContext ctx, Object msg, List<Object> out) {
 
-		ByteBuf buffer = ctx.alloc().buffer(2 * Byte.BYTES + 2 * Short.BYTES + chunkData.readableBytes());
-		buffer.writeByte(descriptor.getType() - 1);
-		buffer.writeShort(descriptor.getFile());
-		buffer.writeShort(fileSize);
-		buffer.writeByte(chunkId);
-		buffer.writeBytes(chunkData);
+		if (msg instanceof OnDemandResponse) {
+			OnDemandResponse resp = (OnDemandResponse) msg;
+			FileDescriptor desc = resp.getFileDescriptor();
+			ByteBuf chunkData = resp.getChunkData();
 
-		out.add(buffer);
+			ByteBuf msgBuffer = Unpooled.buffer(chunkData.capacity() + 3);
+			msgBuffer.writeByte(desc.getType());
+			msgBuffer.writeShort(desc.getFile());
+			chunkData.getBytes(chunkData.readerIndex(), msgBuffer);
+			out.add(msgBuffer);
+
+		} else if (msg instanceof VersionCheckResponse) {
+			VersionCheckResponse response = (VersionCheckResponse) msg;
+
+			out.add(response.getData());
+		}
 	}
 
 }
