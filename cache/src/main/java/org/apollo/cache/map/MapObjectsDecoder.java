@@ -1,16 +1,14 @@
 package org.apollo.cache.map;
 
-import org.apollo.cache.IndexedFileSystem;
-import org.apollo.cache.map.MapIndex;
-import org.apollo.cache.map.MapConstants;
-import org.apollo.cache.map.MapObject;
+import com.oldscape.tool.cache.Cache;
+import com.oldscape.tool.util.MapXTEA;
 import org.apollo.util.BufferUtil;
-import org.apollo.util.CompressionUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipException;
 
 /**
  * A decoder for reading the map objects for a given map.
@@ -21,16 +19,23 @@ public final class MapObjectsDecoder {
 	/**
 	 * Creates a MapObjectsDecoder for the specified map file.
 	 *
-	 * @param fs The {@link IndexedFileSystem} to get the file from.
+	 * @param cache The {@link Cache} to get the file from.
 	 * @param index The map index to decode objects for.
 	 * @return The MapObjectsDecoder.
 	 * @throws IOException If there is an error reading or decompressing the file.
 	 */
-	public static MapObjectsDecoder create(IndexedFileSystem fs, MapIndex index) throws IOException {
-		ByteBuffer compressed = fs.getFile(MapConstants.MAP_INDEX, index.getObjectFile());
-		ByteBuffer decompressed = ByteBuffer.wrap(CompressionUtil.degzip(compressed));
+	public static MapObjectsDecoder create(Cache cache, MapIndex index) throws IOException {
 
-		return new MapObjectsDecoder(decompressed);
+		try {
+			int[] decryptionKeys = MapXTEA.getKey(index.getPackedCoordinates());
+			ByteBuffer data = cache.read(MapConstants.MAP_INDEX, index.getObjectFile(), decryptionKeys).getData();
+
+			return new MapObjectsDecoder(data);
+
+		} catch(ZipException ex) {
+			// TODO: Handle this better.
+			return new MapObjectsDecoder(ByteBuffer.allocate(0));
+		}
 	}
 
 	/**
@@ -54,6 +59,10 @@ public final class MapObjectsDecoder {
 	 */
 	public List<MapObject> decode() {
 		List<MapObject> objects = new ArrayList<>();
+
+		if (buffer.remaining() == 0) {
+			return objects;
+		}
 
 		int id = -1;
 		int idOffset = BufferUtil.readSmart(buffer);

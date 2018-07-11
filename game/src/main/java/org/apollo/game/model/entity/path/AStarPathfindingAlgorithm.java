@@ -1,19 +1,10 @@
 package org.apollo.game.model.entity.path;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.util.Set;
-
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
-import org.apollo.game.model.World;
-import org.apollo.game.model.area.RegionRepository;
 import org.apollo.game.model.area.collision.CollisionManager;
+
+import java.util.*;
 
 /**
  * A {@link PathfindingAlgorithm} that utilises the A* algorithm to find a solution.
@@ -30,6 +21,13 @@ import org.apollo.game.model.area.collision.CollisionManager;
 public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 
 	/**
+	 * The maximum number of iterations before we stop trying to find a path.
+	 *
+	 * TODO: This sucks.
+	 */
+	private static final long MAX_ITERATIONS = 2000;
+
+	/**
 	 * The Heuristic used by this PathfindingAlgorithm.
 	 */
 	private final Heuristic heuristic;
@@ -38,8 +36,8 @@ public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 	 * Creates the A* pathfinding algorithm with the specified {@link Heuristic}.
 	 *
 	 * @param collisionManager The {@link CollisionManager} used to check if there is a collision
-	 * between two {@link Position}s in a path.
-	 * @param heuristic The Heuristic.
+	 *                         between two {@link Position}s in a path.
+	 * @param heuristic        The Heuristic.
 	 */
 	public AStarPathfindingAlgorithm(CollisionManager collisionManager, Heuristic heuristic) {
 		super(collisionManager);
@@ -58,12 +56,17 @@ public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 		open.add(start);
 		sorted.add(start);
 
+		int iteration = 0;
+
 		do {
 			Node active = getCheapest(sorted);
 			Position position = active.getPosition();
 
 			if (position.equals(target)) {
 				break;
+
+			} else if (iteration == MAX_ITERATIONS) {
+				return new ArrayDeque<>();
 			}
 
 			open.remove(active);
@@ -84,6 +87,9 @@ public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 					}
 				}
 			}
+
+			iteration++;
+
 		} while (!open.isEmpty());
 
 		Deque<Position> shortest = new ArrayDeque<>();
@@ -106,10 +112,10 @@ public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 	 * Compares the two specified {@link Node}s, adding the other node to the open {@link Set} if the estimation is
 	 * cheaper than the current cost.
 	 *
-	 * @param active The active node.
-	 * @param other The node to compare the active node against.
-	 * @param open The set of open nodes.
-	 * @param sorted The sorted {@link Queue} of nodes.
+	 * @param active    The active node.
+	 * @param other     The node to compare the active node against.
+	 * @param open      The set of open nodes.
+	 * @param sorted    The sorted {@link Queue} of nodes.
 	 * @param heuristic The {@link Heuristic} used to estimate the cost of the node.
 	 */
 	private void compare(Node active, Node other, Set<Node> open, Queue<Node> sorted, Heuristic heuristic) {

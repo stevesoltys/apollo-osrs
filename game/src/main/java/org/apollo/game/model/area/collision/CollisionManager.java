@@ -82,7 +82,7 @@ public final class CollisionManager {
 			}
 
 			if (height >= 0) {
-				builder.tile(new Position(x, y, height), false, Direction.NESW);
+//				builder.tile(new Position(x, y, height), false, Direction.NESW);
 			}
 		}
 

@@ -23,9 +23,11 @@ public final class PacketMetaDataGroup {
 
 		for (int index = 0; index < lengths.length; index++) {
 			int length = lengths[index];
-			Preconditions.checkArgument(length >= -2, "No packet length can have a value less than -3.");
+			Preconditions.checkArgument(length >= -3, "No packet length can have a value less than -3.");
 			PacketMetaData metaData = null;
-			if (length == -2) {
+			if (length == -3) {
+				metaData = PacketMetaData.createRemaining();
+			} else if (length == -2) {
 				metaData = PacketMetaData.createVariableShort();
 			} else if (length == -1) {
 				metaData = PacketMetaData.createVariableByte();

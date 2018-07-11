@@ -1,7 +1,7 @@
 import org.apollo.game.model.Direction
 import org.apollo.game.plugin.entity.spawn.npc_spawn
 
-npc_spawn("barbarian_woman", x = 3222, y = 3399)
+//npc_spawn("barbarian_woman", x = 3222, y = 3399)
 
 npc_spawn("bear", id = 106, x = 3289, y = 3351)
 
@@ -160,7 +160,7 @@ npc_spawn("apothecary", x = 3196, y = 3403)
 
 npc_spawn("captain_rovin", x = 3204, y = 3496, z = 2)
 
-npc_spawn("curator", x = 3256, y = 3447)
+//npc_spawn("curator", x = 3256, y = 3447)
 
 npc_spawn("dimintheis", x = 3280, y = 3403)
 
@@ -174,7 +174,7 @@ npc_spawn("guidors_wife", id = 342, x = 3280, y = 3382)
 
 npc_spawn("guidor", x = 3284, y = 3381, facing = Direction.SOUTH)
 
-npc_spawn("guild_master", x = 3189, y = 3360)
+//npc_spawn("guild_master", x = 3189, y = 3360)
 
 npc_spawn("gypsy", x = 3203, y = 3423)
 

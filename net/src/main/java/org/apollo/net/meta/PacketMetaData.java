@@ -40,6 +40,15 @@ public final class PacketMetaData {
 	}
 
 	/**
+	 * Creates a {@link PacketMetaData} object for a remaining length packet.
+	 *
+	 * @return The {@link PacketMetaData} object.
+	 */
+	public static PacketMetaData createRemaining() {
+		return new PacketMetaData(PacketType.REMAINING, 0);
+	}
+
+	/**
 	 * The length of this packet.
 	 */
 	private final int length;

@@ -42,7 +42,7 @@ public final class NpcDefinition {
 		NpcDefinition.definitions = definitions;
 		for (int id = 0; id < definitions.length; id++) {
 			NpcDefinition def = definitions[id];
-			if (def.getId() != id) {
+			if (def != null && def.getId() != id) {
 				throw new IllegalStateException("Npc definition id mismatch.");
 			}
 		}

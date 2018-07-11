@@ -25,6 +25,10 @@ public enum PacketType {
 	/**
 	 * A packet where the length is sent to its destination with it as a short.
 	 */
-	VARIABLE_SHORT;
+	VARIABLE_SHORT,
 
+	/**
+	 * A packet where the length is based upon the remaining number of bytes in the buffer.
+	 */
+	REMAINING
 }

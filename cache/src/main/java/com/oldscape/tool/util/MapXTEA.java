@@ -71,6 +71,10 @@ public class MapXTEA {
 		return new int[4];
 	}
 
+	public static boolean hasKey(int region) {
+		return mapKeys.get(region) != null;
+	}
+
 	public static int[] getKey(int region) {
 		int[] keys = mapKeys.get(region);
 		if (keys == null) {

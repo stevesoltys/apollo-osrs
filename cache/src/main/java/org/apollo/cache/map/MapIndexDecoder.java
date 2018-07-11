@@ -1,12 +1,11 @@
 package org.apollo.cache.map;
 
+import com.oldscape.tool.cache.Cache;
+import com.oldscape.tool.cache.region.Region;
 import org.apollo.cache.IndexedFileSystem;
-import org.apollo.cache.archive.Archive;
-import org.apollo.cache.archive.ArchiveEntry;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,17 +18,27 @@ import java.util.Map;
 public final class MapIndexDecoder implements Runnable {
 
 	/**
+	 * The maximum number of possible regions.
+	 */
+	private static final int MAX_REGIONS = Short.MAX_VALUE;
+
+	/**
 	 * The file id of the versions archive.
 	 */
 	private static final int VERSIONS_ARCHIVE_FILE_ID = 5;
 
 	/**
-	 * The IndexedFileSystem.
+	 * The cache.
 	 */
-	private final IndexedFileSystem fs;
+	private final Cache cache;
 
-	public MapIndexDecoder(IndexedFileSystem fs) {
-		this.fs = fs;
+	/**
+	 * Creates the MapIndexDecoder.
+	 *
+	 * @param cache The {@link Cache}.
+	 */
+	public MapIndexDecoder(Cache cache) {
+		this.cache = cache;
 	}
 
 	/**
@@ -39,21 +48,18 @@ public final class MapIndexDecoder implements Runnable {
 	 * @throws IOException If there is an error reading or decoding the Archive.
 	 */
 	public Map<Integer, MapIndex> decode() throws IOException {
-		Archive archive = fs.getArchive(0, VERSIONS_ARCHIVE_FILE_ID);
-		ArchiveEntry entry = archive.getEntry("map_index");
 		Map<Integer, MapIndex> definitions = new HashMap<>();
 
-		ByteBuffer buffer = entry.getBuffer();
-		int count = buffer.capacity() / (3 * Short.BYTES + Byte.BYTES);
-//		int count = buffer.getShort() & 0xFFFF;
+		for (int id = 0; id < MAX_REGIONS; id++) {
+			Region region = new Region(id);
+			int terrain = cache.getFileId(VERSIONS_ARCHIVE_FILE_ID, region.getTerrainIdentifier());
+			int objects = cache.getFileId(VERSIONS_ARCHIVE_FILE_ID, region.getLocationsIdentifier());
 
-		for (int times = 0; times < count; times++) {
-			int id = buffer.getShort() & 0xFFFF;
-			int terrain = buffer.getShort() & 0xFFFF;
-			int objects = buffer.getShort() & 0xFFFF;
-			boolean members = buffer.get() == 1;
+			if (terrain == -1 && objects == -1) {
+				continue;
+			}
 
-			definitions.put(id, new MapIndex(id, terrain, objects, members));
+			definitions.put(id, new MapIndex(id, terrain, objects, true));
 		}
 
 		return definitions;

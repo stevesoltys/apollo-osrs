@@ -38,7 +38,7 @@ public final class GamePacketEncoder extends MessageToByteEncoder<GamePacket> {
 			throw new Exception("Payload too long for variable short packet.");
 		}
 
-		out.writeByte(packet.getOpcode());
+		out.writeByte(packet.getOpcode() + random.nextInt() & 0xFF);
 		if (type == PacketType.VARIABLE_BYTE) {
 			out.writeByte(payloadLength);
 		} else if (type == PacketType.VARIABLE_SHORT) {

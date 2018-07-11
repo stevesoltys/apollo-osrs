@@ -1,14 +1,20 @@
 package org.apollo.cache.decoder;
 
+import com.oldscape.tool.cache.Archive;
+import com.oldscape.tool.cache.Cache;
+import com.oldscape.tool.cache.ReferenceTable;
+import com.oldscape.tool.cache.type.CacheIndex;
+import com.oldscape.tool.cache.type.ConfigArchive;
+import com.oldscape.tool.util.BitUtils;
+import com.oldscape.tool.util.ByteBufferUtils;
+import org.apollo.cache.def.NpcDefinition;
+import org.apollo.util.BufferUtil;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-
-import org.apollo.cache.IndexedFileSystem;
-import org.apollo.cache.archive.Archive;
-import org.apollo.cache.def.NpcDefinition;
-import org.apollo.util.BufferUtil;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Decodes npc data from the {@code npc.dat} file into {@link NpcDefinition}s.
@@ -18,41 +24,40 @@ import org.apollo.util.BufferUtil;
 public final class NpcDefinitionDecoder implements Runnable {
 
 	/**
-	 * The IndexedFileSystem.
+	 * The cache.
 	 */
-	private final IndexedFileSystem fs;
+	private final Cache cache;
 
 	/**
 	 * Creates the NpcDefinitionDecoder.
 	 *
-	 * @param fs The {@link IndexedFileSystem}.
+	 * @param cache The {@link Cache}.
 	 */
-	public NpcDefinitionDecoder(IndexedFileSystem fs) {
-		this.fs = fs;
+	public NpcDefinitionDecoder(Cache cache) {
+		this.cache = cache;
 	}
 
 	@Override
 	public void run() {
 		try {
-			Archive config = fs.getArchive(0, 2);
-			ByteBuffer data = config.getEntry("npc.dat").getBuffer();
-			ByteBuffer idx = config.getEntry("npc.idx").getBuffer();
+			ReferenceTable table = cache.getReferenceTable(CacheIndex.CONFIGS);
+			ReferenceTable.Entry entry = table.getEntry(ConfigArchive.NPC);
+			Archive archive = Archive.decode(cache.read(CacheIndex.CONFIGS, ConfigArchive.NPC).getData(), entry.size());
 
-			int count = idx.getShort(), index = 2;
-			int[] indices = new int[count];
+			NpcDefinition[] definitions = new NpcDefinition[entry.capacity()];
 
-			for (int i = 0; i < count; i++) {
-				indices[i] = index;
-				index += idx.getShort();
-			}
+			for (int id = 0; id < definitions.length; id++) {
+				ReferenceTable.ChildEntry child = entry.getEntry(id);
 
-			NpcDefinition[] definitions = new NpcDefinition[count];
-			for (int i = 0; i < count; i++) {
-				data.position(indices[i]);
-				definitions[i] = decode(i, data);
+				if (child != null) {
+					definitions[id] = decode(id, archive.getEntry(child.index()));
+				} else {
+					definitions[id] = new NpcDefinition(id);
+				}
 			}
 
 			NpcDefinition.init(definitions);
+
 		} catch (IOException e) {
 			throw new UncheckedIOException("Error decoding NpcDefinitions.", e);
 		}
@@ -61,7 +66,7 @@ public final class NpcDefinitionDecoder implements Runnable {
 	/**
 	 * Decodes a single definition.
 	 *
-	 * @param id The npc's id.
+	 * @param id     The npc's id.
 	 * @param buffer The buffer.
 	 * @return The {@link NpcDefinition}.
 	 */
@@ -76,24 +81,31 @@ public final class NpcDefinitionDecoder implements Runnable {
 			} else if (opcode == 1) {
 				int length = buffer.get() & 0xFF;
 				int[] models = new int[length];
-				for (int index = 0; index < length; index++) {
-					models[index] = buffer.getShort();
+
+				for (int idx = 0; idx < length; ++idx) {
+					models[idx] = buffer.getShort() & 0xFFFF;
 				}
+
 			} else if (opcode == 2) {
 				definition.setName(BufferUtil.readString(buffer));
 			} else if (opcode == 3) {
 				definition.setDescription(BufferUtil.readString(buffer));
 			} else if (opcode == 12) {
-				definition.setSize(buffer.get());
+				definition.setSize(buffer.get() & 0xFF);
 			} else if (opcode == 13) {
-				definition.setStandAnimation(buffer.getShort());
+				definition.setStandAnimation(buffer.getShort() & 0xFFFF);
 			} else if (opcode == 14) {
-				definition.setWalkAnimation(buffer.getShort());
+				definition.setWalkAnimation(buffer.getShort() & 0xFFFF);
+			} else if (opcode == 15) {
+				int anInt2165 = buffer.getShort() & 0xFFFF;
+			} else if (opcode == 16) {
+				int anInt2189 = buffer.getShort() & 0xFFFF;
 			} else if (opcode == 17) {
-				definition
-						.setWalkAnimations(buffer.getShort(), buffer.getShort(), buffer.getShort(), buffer.getShort());
-			} else if (opcode >= 30 && opcode < 40) {
+				definition.setWalkAnimations(buffer.getShort() & 0xFFFF, buffer.getShort() & 0xFFFF,
+					buffer.getShort() & 0xFFFF, buffer.getShort() & 0xFFFF);
+			} else if (opcode >= 30 && opcode < 35) {
 				String action = BufferUtil.readString(buffer);
+
 				if (action.equals("hidden")) {
 					action = null;
 				}
@@ -101,37 +113,122 @@ public final class NpcDefinitionDecoder implements Runnable {
 				definition.setInteraction(opcode - 30, action);
 			} else if (opcode == 40) {
 				int length = buffer.get() & 0xFF;
-				int[] originalColours = new int[length];
-				int[] replacementColours = new int[length];
+				short[] recolorToFind = new short[length];
+				short[] recolorToReplace = new short[length];
 
-				for (int index = 0; index < length; index++) {
-					originalColours[index] = buffer.getShort();
-					replacementColours[index] = buffer.getShort();
+				for (int idx = 0; idx < length; ++idx) {
+					recolorToFind[idx] = (short) (buffer.getShort() & 0xFFFF);
+					recolorToReplace[idx] = (short) (buffer.getShort() & 0xFFFF);
 				}
+
+			} else if (opcode == 41) {
+				int length = buffer.get() & 0xFF;
+				short[] retextureToFind = new short[length];
+				short[] retextureToReplace = new short[length];
+
+				for (int idx = 0; idx < length; ++idx) {
+					retextureToFind[idx] = (short) (buffer.getShort() & 0xFFFF);
+					retextureToReplace[idx] = (short) (buffer.getShort() & 0xFFFF);
+				}
+
 			} else if (opcode == 60) {
 				int length = buffer.get() & 0xFF;
-				int[] additionalModels = new int[length];
+				int[] models_2 = new int[length];
 
-				for (int index = 0; index < length; index++) {
-					additionalModels[index] = buffer.getShort();
+				for (int idx = 0; idx < length; ++idx) {
+					models_2[idx] = buffer.getShort() & 0xFFFF;
 				}
-			} else if (opcode >= 90 && opcode <= 92) {
-				buffer.getShort(); // Dummy
-			} else if (opcode == 95) {
-				definition.setCombatLevel(buffer.getShort());
-			} else if (opcode == 97 || opcode == 98) {
-				buffer.getShort();
-			} else if (opcode == 100 || opcode == 101) {
-				buffer.get();
-			} else if (opcode == 102 || opcode == 103) {
-				buffer.getShort();
-			} else if (opcode == 106) {
-				wrap(buffer.getShort());
-				wrap(buffer.getShort());
 
-				int count = buffer.get() & 0xFF;
-				int[] morphisms = new int[count + 1];
-				Arrays.setAll(morphisms, index -> wrap(buffer.getShort()));
+			} else if (opcode == 93) {
+				boolean renderOnMinimap = false;
+			} else if (opcode == 95) {
+				definition.setCombatLevel(buffer.getShort() & 0xFFFF);
+			} else if (opcode == 97) {
+				int resizeX = buffer.getShort() & 0xFFFF;
+			} else if (opcode == 98) {
+				int resizeY = buffer.getShort() & 0xFFFF;
+			} else if (opcode == 99) {
+				boolean hasRenderPriority = true;
+			} else if (opcode == 100) {
+				int ambient = buffer.get();
+			} else if (opcode == 101) {
+				int contrast = buffer.get();
+			} else if (opcode == 102) {
+				int headIcon = buffer.getShort() & 0xFFFF;
+			} else if (opcode == 103) {
+				int anInt2156 = buffer.getShort() & 0xFFFF;
+			} else if (opcode == 106) {
+				int anInt2174 = buffer.getShort() & 0xFFFF;
+				if (0xFFFF == anInt2174) {
+					anInt2174 = -1;
+				}
+
+				int anInt2187 = buffer.getShort() & 0xFFFF;
+				if (0xFFFF == anInt2187) {
+					anInt2187 = -1;
+				}
+
+				int length = buffer.get() & 0xFF;
+				int[] anIntArray2185 = new int[length + 2];
+
+				for (int idx = 0; idx <= length; ++idx) {
+					anIntArray2185[idx] = buffer.getShort() & 0xFFFF;
+					if (anIntArray2185[idx] == 0xFFFF) {
+						anIntArray2185[idx] = -1;
+					}
+				}
+
+				anIntArray2185[length + 1] = -1;
+			} else if (opcode == 107) {
+				boolean isClickable = false;
+			} else if (opcode == 109) {
+				boolean aBool2170 = false;
+			} else if (opcode == 111) {
+				boolean aBool2190 = true;
+			} else if (opcode == 118) {
+				int anInt2174 = buffer.getShort() & 0xFFFF;
+				if (0xFFFF == anInt2174) {
+					anInt2174 = -1;
+				}
+
+				int anInt2187 = buffer.getShort() & 0xFFFF;
+				if (0xFFFF == anInt2187) {
+					anInt2187 = -1;
+				}
+
+				int var = buffer.getShort() & 0xFFFF;
+				if (var == 0xFFFF) {
+					var = -1;
+				}
+
+				int length = buffer.get() & 0xFF;
+				int[] anIntArray2185 = new int[length + 2];
+
+				for (int idx = 0; idx <= length; ++idx) {
+					anIntArray2185[idx] = buffer.getShort() & 0xFFFF;
+					if (anIntArray2185[idx] == 0xFFFF) {
+						anIntArray2185[idx] = -1;
+					}
+				}
+
+				anIntArray2185[length + 1] = var;
+			} else if (opcode == 249) {
+				int length = buffer.get() & 0xFF;
+
+				Map<Integer, Object> params = new HashMap<>(BitUtils.nextPowerOfTwo(length));
+				for (int i = 0; i < length; i++) {
+					boolean isString = (buffer.get() & 0xFF) == 1;
+					int key = ByteBufferUtils.getMedium(buffer);
+					Object value;
+
+					if (isString) {
+						value = ByteBufferUtils.getString(buffer);
+					} else {
+						value = buffer.getInt();
+					}
+
+					params.put(key, value);
+				}
 			}
 		}
 	}

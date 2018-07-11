@@ -394,7 +394,7 @@ public final class GamePacketBuilder {
 		for (char c : chars) {
 			buffer.writeByte((byte) c);
 		}
-		buffer.writeByte(BufferUtil.STRING_TERMINATOR);
+		buffer.writeByte(BufferUtil.STRING_TERMINATOR_NEW);
 	}
 
 	/**

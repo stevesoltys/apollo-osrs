@@ -1,15 +1,8 @@
 package org.apollo.cache.tools;
 
 import com.google.common.base.Preconditions;
-import org.apollo.cache.IndexedFileSystem;
-import org.apollo.cache.decoder.ItemDefinitionDecoder;
 import org.apollo.cache.def.ItemDefinition;
 import org.apollo.util.tools.EquipmentConstants;
-
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Paths;
 
 /**
  * A tool for updating the equipment data.
@@ -29,33 +22,33 @@ public final class EquipmentUpdater {
 		Preconditions.checkArgument(args.length == 1, "Usage:\njava -cp ... org.apollo.tools.EquipmentUpdater [release].");
 		String release = args[0];
 
-		try (DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("data/equipment-" + release + ".dat")));
-			IndexedFileSystem fs = new IndexedFileSystem(Paths.get("data/fs/", release), true)) {
-			ItemDefinitionDecoder decoder = new ItemDefinitionDecoder(fs);
-			decoder.run();
-
-			int count = ItemDefinition.count();
-			os.writeShort(count);
-
-			for (int id = 0; id < count; id++) {
-				ItemDefinition definition = ItemDefinition.lookup(id);
-				int type = getWeaponType(definition);
-				os.writeByte(type);
-
-				if (type != -1) {
-					os.writeBoolean(isTwoHanded(definition));
-					os.writeBoolean(isFullBody(definition));
-					os.writeBoolean(isFullHat(definition));
-					os.writeBoolean(isFullMask(definition));
-					os.writeByte(getAttackRequirement(definition));
-					os.writeByte(getStrengthRequirement(definition));
-					os.writeByte(getDefenceRequirement(definition));
-					os.writeByte(getRangedRequirement(definition));
-					os.writeByte(getPrayerRequirement(definition));
-					os.writeByte(getMagicRequirement(definition));
-				}
-			}
-		}
+//		try (DataOutputStream os = new DataOutputStream(new BufferedOutputStream(new FileOutputStream("data/equipment-" + release + ".dat")));
+//			IndexedFileSystem fs = new IndexedFileSystem(Paths.get("data/fs/", release), true)) {
+//			ItemDefinitionDecoder decoder = new ItemDefinitionDecoder(fs);
+//			decoder.run();
+//
+//			int count = ItemDefinition.count();
+//			os.writeShort(count);
+//
+//			for (int id = 0; id < count; id++) {
+//				ItemDefinition definition = ItemDefinition.lookup(id);
+//				int type = getWeaponType(definition);
+//				os.writeByte(type);
+//
+//				if (type != -1) {
+//					os.writeBoolean(isTwoHanded(definition));
+//					os.writeBoolean(isFullBody(definition));
+//					os.writeBoolean(isFullHat(definition));
+//					os.writeBoolean(isFullMask(definition));
+//					os.writeByte(getAttackRequirement(definition));
+//					os.writeByte(getStrengthRequirement(definition));
+//					os.writeByte(getDefenceRequirement(definition));
+//					os.writeByte(getRangedRequirement(definition));
+//					os.writeByte(getPrayerRequirement(definition));
+//					os.writeByte(getMagicRequirement(definition));
+//				}
+//			}
+//		}
 	}
 
 	/**

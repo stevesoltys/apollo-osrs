@@ -10,7 +10,7 @@ on_player_event { LoginEvent::class }
         val equippedTiaraConfig = equippedHat?.let { item -> Tiara.findById(item.id)?.configId } ?: 0
         val configValue = 1 shl equippedTiaraConfig
 
-        player.send(ConfigMessage(changeAltarObjectConfigId, configValue))
+//        player.send(ConfigMessage(changeAltarObjectConfigId, configValue))
     }
 
 on { ObjectActionMessage::class }

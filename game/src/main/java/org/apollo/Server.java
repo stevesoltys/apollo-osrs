@@ -138,8 +138,8 @@ public final class Server {
 
 		World world = new World();
 		ServiceManager services = new ServiceManager(world);
-		Cache cache = new Cache(FileStore.open(Paths.get("data/fs", Integer.toString(version)).toFile()));
-		ServerContext context = new ServerContext(release, services, cache);
+		Cache fs = new Cache(FileStore.open(Paths.get("data/fs", Integer.toString(version)).toFile()));
+		ServerContext context = new ServerContext(release, services, fs);
 		ApolloHandler handler = new ApolloHandler(context);
 
 		ChannelInitializer<SocketChannel> service = new ServiceChannelInitializer(handler);
@@ -157,7 +157,6 @@ public final class Server {
 		PluginManager manager = new PluginManager(world, new PluginContext(context));
 		services.startAll();
 
-		IndexedFileSystem fs = new IndexedFileSystem(Paths.get("data/fs", "377"), true);
 		world.init(version, fs, manager);
 	}
 

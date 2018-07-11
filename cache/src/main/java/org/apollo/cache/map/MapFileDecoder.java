@@ -1,5 +1,6 @@
 package org.apollo.cache.map;
 
+import com.oldscape.tool.cache.Cache;
 import org.apollo.cache.IndexedFileSystem;
 import org.apollo.util.CompressionUtil;
 
@@ -20,11 +21,11 @@ public class MapFileDecoder {
 	 * @return The MapFileDecoder.
 	 * @throws IOException If there is an error reading or decompressing the file.
 	 */
-	public static MapFileDecoder create(IndexedFileSystem fs, MapIndex index) throws IOException {
-		ByteBuffer compressed = fs.getFile(MapConstants.MAP_INDEX, index.getMapFile());
-		ByteBuffer decompressed = ByteBuffer.wrap(CompressionUtil.degzip(compressed));
+	public static MapFileDecoder create(Cache cache, MapIndex index) throws IOException {
+		ByteBuffer compressed = cache.read(MapConstants.MAP_INDEX, index.getMapFile()).getData();
+//		ByteBuffer decompressed = ByteBuffer.wrap(CompressionUtil.degzip(compressed));
 
-		return new MapFileDecoder(decompressed);
+		return new MapFileDecoder(compressed);
 	}
 
 	/**

@@ -23,6 +23,11 @@ public enum GameDecoderState {
 	 * The payload state will wait for the whole packet to be received. Then, it will pass a {@link GamePacket} object
 	 * to Netty and reset the state back to the game opcode state, ready for the next packet.
 	 */
-	GAME_PAYLOAD;
+	GAME_PAYLOAD,
 
+	/**
+	 * The game length state obtains the packet length from the remaining bytes in the buffer.
+	 * After setting the length, it sets the state to the payload state.
+	 */
+	GAME_REMAINING
 }

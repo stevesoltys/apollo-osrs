@@ -1,12 +1,7 @@
 package org.apollo.game.fs.decoder;
 
-import org.apollo.cache.IndexedFileSystem;
-import org.apollo.cache.map.MapConstants;
-import org.apollo.cache.map.MapFile;
-import org.apollo.cache.map.MapFileDecoder;
-import org.apollo.cache.map.MapIndex;
-import org.apollo.cache.map.MapPlane;
-import org.apollo.cache.map.Tile;
+import com.oldscape.tool.cache.Cache;
+import org.apollo.cache.map.*;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.area.collision.CollisionManager;
 
@@ -31,9 +26,9 @@ public final class WorldMapDecoder implements Runnable {
 	private static final int BRIDGE_TILE = 0x2;
 
 	/**
-	 * The {@link IndexedFileSystem}.
+	 * The {@link Cache}.
 	 */
-	private IndexedFileSystem fs;
+	private Cache cache;
 
 	/**
 	 * The {@link CollisionManager} to notify of bridged / blocked tiles.
@@ -43,11 +38,11 @@ public final class WorldMapDecoder implements Runnable {
 	/**
 	 * Create a new {@link WorldMapDecoder}.
 	 *
-	 * @param fs The {@link IndexedFileSystem} to load {@link MapFile}s. from.
+	 * @param cache The {@link Cache} to load {@link MapFile}s. from.
 	 * @param collisionManager The {@link CollisionManager} to register tiles with.
 	 */
-	public WorldMapDecoder(IndexedFileSystem fs, CollisionManager collisionManager) {
-		this.fs = fs;
+	public WorldMapDecoder(Cache cache, CollisionManager collisionManager) {
+		this.cache = cache;
 		this.collisionManager = collisionManager;
 	}
 
@@ -61,7 +56,7 @@ public final class WorldMapDecoder implements Runnable {
 
 		try {
 			for (MapIndex index : mapIndices.values()) {
-				MapFileDecoder decoder = MapFileDecoder.create(fs, index);
+				MapFileDecoder decoder = MapFileDecoder.create(cache, index);
 				MapFile mapFile = decoder.decode();
 				MapPlane[] mapPlanes = mapFile.getPlanes();
 

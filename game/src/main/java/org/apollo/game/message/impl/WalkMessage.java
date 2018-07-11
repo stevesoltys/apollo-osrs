@@ -3,8 +3,6 @@ package org.apollo.game.message.impl;
 import org.apollo.game.model.Position;
 import org.apollo.net.message.Message;
 
-import com.google.common.base.Preconditions;
-
 /**
  * A {@link Message} sent by the client to request that the player walks somewhere.
  *
@@ -13,34 +11,33 @@ import com.google.common.base.Preconditions;
 public final class WalkMessage extends Message {
 
 	/**
+	 * The destination.
+	 */
+	private final Position destination;
+
+	/**
 	 * The running flag.
 	 */
 	private final boolean run;
 
 	/**
-	 * The steps.
-	 */
-	private final Position[] steps;
-
-	/**
 	 * Creates the message.
 	 *
-	 * @param steps The steps array.
-	 * @param run The run flag.
+	 * @param destination The destination.
+	 * @param run         The run flag.
 	 */
-	public WalkMessage(Position[] steps, boolean run) {
-		Preconditions.checkArgument(steps.length >= 0, "Number of steps cannot be negative.");
-		this.steps = steps;
+	public WalkMessage(Position destination, boolean run) {
+		this.destination = destination;
 		this.run = run;
 	}
 
 	/**
-	 * Gets the steps array.
+	 * Gets the destination.
 	 *
-	 * @return An array of steps.
+	 * @return The destination.
 	 */
-	public Position[] getSteps() {
-		return steps;
+	public Position getDestination() {
+		return destination;
 	}
 
 	/**

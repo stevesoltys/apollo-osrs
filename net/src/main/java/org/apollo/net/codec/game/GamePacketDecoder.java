@@ -68,6 +68,9 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 			case GAME_PAYLOAD:
 				decodePayload(in, out);
 				break;
+			case GAME_REMAINING:
+				decodeRemaining(in);
+				break;
 			default:
 				throw new IllegalStateException("Invalid game decoder state.");
 		}
@@ -88,6 +91,18 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 	}
 
 	/**
+	 * Decodes the length of the packet by looking at the remaining bytes in the buffer.
+	 *
+	 * @param buffer The buffer.
+	 */
+	private void decodeRemaining(ByteBuf buffer) {
+		if (buffer.isReadable()) {
+			length = buffer.readableBytes();
+			setState(GameDecoderState.GAME_PAYLOAD);
+		}
+	}
+
+	/**
 	 * Decodes the opcode state.
 	 *
 	 * @param buffer The buffer.
@@ -96,7 +111,7 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 	private void decodeOpcode(ByteBuf buffer, List<Object> out) {
 		if (buffer.isReadable()) {
 			int encryptedOpcode = buffer.readUnsignedByte();
-			opcode = encryptedOpcode;
+			opcode = encryptedOpcode;// - random.nextInt() & 0xFF; TODO: Fix Isaac random for incoming packets.
 
 			PacketMetaData metaData = release.getIncomingPacketMetaData(opcode);
 			Preconditions.checkNotNull(metaData, "Illegal opcode: " + opcode + ".");
@@ -114,6 +129,9 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 					break;
 				case VARIABLE_BYTE:
 					setState(GameDecoderState.GAME_LENGTH);
+					break;
+				case REMAINING:
+					setState(GameDecoderState.GAME_REMAINING);
 					break;
 				default:
 					throw new IllegalStateException("Illegal packet type: " + type + ".");

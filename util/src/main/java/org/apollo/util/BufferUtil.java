@@ -83,7 +83,12 @@ public final class BufferUtil {
 	/**
 	 * The terminator of a string.
 	 */
-	public static final int STRING_TERMINATOR = 10;
+	public static final int STRING_TERMINATOR = 0;
+
+	/**
+	 * The terminator of a string.
+	 */
+	public static final int STRING_TERMINATOR_NEW = 0;
 
 	/**
 	 * Default private constructor to prevent instantiation.
