@@ -157,7 +157,7 @@ public final class TextUtil {
 	 * @param out The output array.
 	 * @return The number of bytes written to the output array.
 	 */
-	public static void compress(String text, byte[] out) {
+	public static int compress(String text, byte[] out) {
 		if (text.length() > 80) {
 			text = text.substring(0, 80);
 		}
@@ -198,6 +198,8 @@ public final class TextUtil {
 				}
 			}
 		}
+
+		return srcOffset;
 	}
 
 	/**
