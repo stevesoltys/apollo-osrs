@@ -6,8 +6,9 @@ package org.apollo.game.model.inter;
  * @author Graham
  */
 public enum InterfaceType {
+
     /**
-     * TODO: What is this..?
+     * A window pane is the selected layout of the default user interfaces.
      */
     WINDOW_PANE,
 

@@ -34,7 +34,7 @@ public final class InterfaceSet {
 
 	static {
 		AttributeMap.define("selected_window_pane",
-			AttributeDefinition.forInt(InterfaceConstants.DEFAULT_WINDOW_PANE, AttributePersistence.PERSISTENT));
+			AttributeDefinition.forInt(WindowPane.SCREEN_FIXED.getIdentifier(), AttributePersistence.PERSISTENT));
 	}
 
 	/**
@@ -148,10 +148,12 @@ public final class InterfaceSet {
 	 * Sends the default user interfaces.
 	 */
 	public void sendDefaultUserInterfaces() {
-		openWindowPane(InterfaceConstants.DEFAULT_WINDOW_PANE);
+		Number windowPaneIdentifier = (Number) player.getAttribute("selected_window_pane").getValue();
+		WindowPane windowPane = WindowPane.valueOf(windowPaneIdentifier.intValue());
+		openWindowPane(windowPane.getIdentifier());
 
 		Arrays.stream(InterfaceConstants.UserInterface.values())
-			.filter(ui -> ui.getWindowId() == InterfaceConstants.DEFAULT_WINDOW_PANE)
+			.filter(ui -> ui.getWindowId() == windowPane.getIdentifier())
 			.forEach(ui -> {
 				player.send(new OpenInterfaceMessage(ui.getLayer(), ui.getWindowId(), ui.getInterfaceId(), true));
 			});

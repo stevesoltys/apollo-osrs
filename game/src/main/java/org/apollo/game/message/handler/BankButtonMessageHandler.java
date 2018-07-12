@@ -32,11 +32,11 @@ public final class BankButtonMessageHandler extends MessageHandler<ButtonMessage
 
 	@Override
 	public void handle(Player player, ButtonMessage message) {
-		if (message.getWidgetId() == WITHDRAW_AS_ITEM) {
-			player.setWithdrawingNotes(false);
-		} else if (message.getWidgetId() == WITHDRAW_AS_NOTE) {
-			player.setWithdrawingNotes(true);
-		}
+//		if (message.getWidgetId() == WITHDRAW_AS_ITEM) {
+//			player.setWithdrawingNotes(false);
+//		} else if (message.getWidgetId() == WITHDRAW_AS_NOTE) {
+//			player.setWithdrawingNotes(true);
+//		}
 	}
 
 }

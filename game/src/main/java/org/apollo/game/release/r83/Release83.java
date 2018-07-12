@@ -1,5 +1,6 @@
 package org.apollo.game.release.r83;
 
+import org.apollo.game.message.handler.ItemOptionMessageDecoder;
 import org.apollo.game.message.impl.*;
 import org.apollo.net.meta.PacketMetaDataGroup;
 import org.apollo.net.release.Release;
@@ -56,7 +57,7 @@ public class Release83 extends Release {
 
 		PACKET_SIZES[89] = 6;
 		PACKET_SIZES[161] = -1;
-		PACKET_SIZES[235] = -1;
+		PACKET_SIZES[235] = -1; // command
 		PACKET_SIZES[83] = -2;
 		PACKET_SIZES[55] = -1;
 		PACKET_SIZES[250] = 3;
@@ -138,12 +139,22 @@ public class Release83 extends Release {
 		register(SendWindowPaneMessage.class, new SendWindowPaneEncoder());
 		register(OpenInterfaceMessage.class, new OpenInterfaceMessageEncoder());
 
+		register(UpdateSkillMessage.class, new UpdateSkillMessageEncoder());
+		register(UpdateItemsMessage.class, new UpdateItemsMessageEncoder());
+		register(UpdateRunEnergyMessage.class, new UpdateRunEnergyEncoder());
+		register(ServerChatMessage.class, new ServerMessageMessageEncoder());
+
 		WalkMessageDecoder walkingDecoder = new WalkMessageDecoder();
 		register(177, walkingDecoder);
 		register(161, walkingDecoder);
 
 		register(55, new PublicChatMessageDecoder());
-
 		register(129, new ScreenResizeMessageDecoder());
+		register(235, new CommandMessageDecoder());
+
+		ItemOptionMessageDecoder itemOptionMessageDecoder = new ItemOptionMessageDecoder();
+		register(32, itemOptionMessageDecoder);
+
+		register(255, new ButtonMessageDecoder());
 	}
 }

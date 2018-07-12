@@ -113,11 +113,21 @@ public final class Skill {
 	public static final int RUNECRAFT = 20;
 
 	/**
+	 * The construction id
+	 */
+	public static final int CONSTRUCTION = 21;
+
+	/**
+	 * The construction id
+	 */
+	public static final int HUNTER = 22;
+
+	/**
 	 * The skill names.
 	 */
-	private static final String[] SKILL_NAMES = { "Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer",
-			"Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining",
-			"Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecraft" };
+	private static final String[] SKILL_NAMES = {"Attack", "Defence", "Strength", "Hitpoints", "Ranged", "Prayer",
+		"Magic", "Cooking", "Woodcutting", "Fletching", "Fishing", "Firemaking", "Crafting", "Smithing", "Mining",
+		"Herblore", "Agility", "Thieving", "Slayer", "Farming", "Runecraft", "Construction", "Hunter"};
 
 	/**
 	 * Gets the name of a skill.
@@ -144,8 +154,7 @@ public final class Skill {
 	 * specified current level.
 	 *
 	 * @param currentLevel The current level.
-	 * @param skill The existing skill.
-	 *
+	 * @param skill        The existing skill.
 	 * @return The new skill with the updated current level.
 	 */
 	public static Skill updateCurrentLevel(int currentLevel, Skill skill) {
@@ -157,7 +166,7 @@ public final class Skill {
 	 * specified experience.
 	 *
 	 * @param experience The experience.
-	 * @param skill The existing skill.
+	 * @param skill      The existing skill.
 	 * @return The new skill with the updated experience.
 	 */
 	public static Skill updateExperience(double experience, Skill skill) {
@@ -169,7 +178,7 @@ public final class Skill {
 	 * specified maximum level.
 	 *
 	 * @param maximumLevel experience The maximum level.
-	 * @param skill The existing skill.
+	 * @param skill        The existing skill.
 	 * @return The new skill with the updated maximum level.
 	 */
 	public static Skill updateMaximumLevel(int maximumLevel, Skill skill) {
@@ -194,7 +203,7 @@ public final class Skill {
 	/**
 	 * Creates a skill.
 	 *
-	 * @param experience The experience.
+	 * @param experience   The experience.
 	 * @param currentLevel The current level.
 	 * @param maximumLevel The maximum level.
 	 */

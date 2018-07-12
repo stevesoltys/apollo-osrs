@@ -36,7 +36,7 @@ public final class GameMessageEncoder extends MessageToMessageEncoder<Message> {
 	@Override
 	protected void encode(ChannelHandlerContext ctx, Message message, List<Object> out) {
 		MessageEncoder<Message> encoder = (MessageEncoder<Message>) release.getMessageEncoder(message.getClass());
-		logger.info(String.format("Encoding message \"%s\"", message.getClass().getSimpleName()));
+//		logger.info(String.format("Encoding message \"%s\"", message.getClass().getSimpleName()));
 
 		if (encoder != null) {
 			out.add(encoder.encode(message));

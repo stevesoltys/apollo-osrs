@@ -46,7 +46,8 @@ abstract class KotlinPluginScript(private var world: World, val context: PluginC
     /**
      * Create a [ButtonMessage] [MessageHandler] for the given [id].
      */
-    fun on_button(id: Int) = on { ButtonMessage::class }.where { widgetId == id }
+    fun on_button(interfaceId: Int, id: Int) = on { ButtonMessage::class }
+        .where { this.interfaceId == interfaceId && button == id }
 
     fun start(callback: (World) -> Unit) {
         this.startListener = callback

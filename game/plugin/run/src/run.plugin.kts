@@ -1,10 +1,17 @@
-import org.apollo.game.message.impl.ButtonMessage
+import org.apollo.game.message.impl.UpdateRunEnergyMessage
+import org.apollo.game.model.event.impl.LoginEvent
 
-val WALK_BUTTON_ID = 152
-val RUN_BUTTON_ID = 153
+on_button(interfaceId = 261, id = 67)
+        .then {
+            it.toggleRunning()
+        }
 
-on { ButtonMessage::class }
-	.where { widgetId == WALK_BUTTON_ID || widgetId == RUN_BUTTON_ID }
-	.then {
-		it.toggleRunning()
-	}
+on_button(interfaceId = 160, id = 22)
+        .then {
+            it.toggleRunning()
+        }
+
+on_player_event { LoginEvent::class }
+        .then {
+            it.send(UpdateRunEnergyMessage(it.runEnergy))
+        }

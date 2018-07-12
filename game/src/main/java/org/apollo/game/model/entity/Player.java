@@ -22,6 +22,7 @@ import org.apollo.game.model.inv.*;
 import org.apollo.game.model.inv.Inventory.StackMode;
 import org.apollo.game.model.skill.LevelUpSkillListener;
 import org.apollo.game.model.skill.SynchronizationSkillListener;
+import org.apollo.game.scheduling.impl.RunEnergyNormalizationTask;
 import org.apollo.game.session.GameSession;
 import org.apollo.game.sync.block.SynchronizationBlock;
 import org.apollo.net.message.Message;
@@ -207,9 +208,9 @@ public final class Player extends Mob {
 	/**
 	 * Creates the Player.
 	 *
-	 * @param world The {@link World} containing the Player.
+	 * @param world       The {@link World} containing the Player.
 	 * @param credentials The player's credentials.
-	 * @param position The initial position.
+	 * @param position    The initial position.
 	 */
 	public Player(World world, PlayerCredentials credentials, Position position) {
 		super(world, position);
@@ -444,8 +445,8 @@ public final class Player extends Mob {
 	 * @return The run energy.
 	 */
 	public int getRunEnergy() {
-		Attribute<Integer> energy = attributes.get("run_energy");
-		return energy.getValue();
+		Attribute<Number> energy = attributes.get("run_energy");
+		return energy.getValue().intValue();
 	}
 
 	/**
@@ -724,10 +725,10 @@ public final class Player extends Mob {
 			sendMessage("You are currently muted. Other players will not see your chat messages.");
 		}
 
-//		inventory.forceRefresh();
-//		equipment.forceRefresh();
+		inventory.forceRefresh();
+		equipment.forceRefresh();
 //		bank.forceRefresh();
-//		skillSet.forceRefresh();
+		skillSet.forceRefresh();
 
 		world.submit(new LoginEvent(this));
 	}
@@ -911,7 +912,7 @@ public final class Player extends Mob {
 	 * Sets whether or not the player is withdrawing notes from the bank.
 	 *
 	 * @param withdrawingNotes Whether or not the player is withdrawing noted
-	 * items.
+	 *                         items.
 	 */
 	public void setWithdrawingNotes(boolean withdrawingNotes) {
 		this.withdrawingNotes = withdrawingNotes;
@@ -974,6 +975,9 @@ public final class Player extends Mob {
 	 * Initialises this player.
 	 */
 	private void init() {
+		setPrivilegeLevel(PrivilegeLevel.ADMINISTRATOR);
+		world.schedule(new RunEnergyNormalizationTask(this));
+
 		initInventories();
 		initSkills();
 	}
@@ -982,22 +986,26 @@ public final class Player extends Mob {
 	 * Initialises the player's inventories.
 	 */
 	private void initInventories() {
-		InventoryListener fullInventory = new FullInventoryListener(this, FullInventoryListener.FULL_INVENTORY_MESSAGE);
-		InventoryListener fullBank = new FullInventoryListener(this, FullInventoryListener.FULL_BANK_MESSAGE);
-		InventoryListener appearance = new AppearanceInventoryListener(this);
+		InventoryListener fullInventoryListener = new FullInventoryListener(this, FullInventoryListener.FULL_INVENTORY_MESSAGE);
+		InventoryListener fullBankListener = new FullInventoryListener(this, FullInventoryListener.FULL_BANK_MESSAGE);
+		InventoryListener appearanceListener = new AppearanceInventoryListener(this);
 
-		InventoryListener syncInventory = new SynchronizationInventoryListener(this,
-			SynchronizationInventoryListener.INVENTORY_ID);
-		InventoryListener syncBank = new SynchronizationInventoryListener(this, BankConstants.BANK_INVENTORY_ID);
-		InventoryListener syncEquipment = new SynchronizationInventoryListener(this,
-			SynchronizationInventoryListener.EQUIPMENT_ID);
+		InventoryListener syncInventoryListener = new SynchronizationInventoryListener(this,
+			SynchronizationInventoryListener.INVENTORY_ID, SynchronizationInventoryListener.INVENTORY_CHILD_ID,
+			SynchronizationInventoryListener.INVENTORY_TYPE_ID);
 
-		inventory.addListener(syncInventory);
-		inventory.addListener(fullInventory);
-		bank.addListener(syncBank);
-		bank.addListener(fullBank);
-		equipment.addListener(syncEquipment);
-		equipment.addListener(appearance);
+		InventoryListener syncBankListener = new SynchronizationInventoryListener(this,
+			BankConstants.BANK_INVENTORY_ID);
+		InventoryListener syncEquipmentListener = new SynchronizationInventoryListener(this,
+			SynchronizationInventoryListener.EQUIPMENT_ID, SynchronizationInventoryListener.EQUIPMENT_CHILD_ID,
+			SynchronizationInventoryListener.EQUIPMENT_TYPE_ID);
+
+		inventory.addListener(syncInventoryListener);
+		inventory.addListener(fullInventoryListener);
+//		bank.addListener(syncBankListener);
+//		bank.addListener(fullBankListener);
+		equipment.addListener(syncEquipmentListener);
+		equipment.addListener(appearanceListener);
 	}
 
 	/**

@@ -108,4 +108,10 @@
             <handler>org.apollo.game.message.handler.WalkMessageHandler</handler>
         </chain>
     </message>
+    <message>
+        <type>org.apollo.game.message.impl.ScreenResizeMessage</type>
+        <chain>
+            <handler>org.apollo.game.message.handler.ScreenResizeMessageHandler</handler>
+        </chain>
+    </message>
 </messages>

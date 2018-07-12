@@ -1,14 +1,14 @@
 package org.apollo.game.message.impl;
 
-import org.apollo.game.model.Item;
+import org.apollo.game.model.inv.SlottedItem;
 import org.apollo.net.message.Message;
 
 /**
- * A {@link Message} sent to the client that updates all the items in an interface.
+ * A {@link Message} sent to the client that updates a single item in an interface.
  *
  * @author Graham
  */
-public final class UpdateItemsMessage extends Message {
+public final class UpdateSlottedItemMessage extends Message {
 
 	/**
 	 * The interface id.
@@ -26,20 +26,20 @@ public final class UpdateItemsMessage extends Message {
 	private final int type;
 
 	/**
-	 * The items.
+	 * The slotted item.
 	 */
-	private final Item[] items;
+	private final SlottedItem item;
 
 	/**
-	 * Creates the update inventory interface message.
-	 *
-	 * @param interfaceId The interface id.
-	 * @param items The items.
+	 * Creates the update item in interface message.
+	 *  @param interfaceId The interface id.
+	 * @param childId
+	 * @param item       The slotted item.
 	 */
-	public UpdateItemsMessage(int interfaceId, int childId, int type, Item[] items) {
+	public UpdateSlottedItemMessage(int interfaceId, int childId, int type, SlottedItem item) {
 		this.interfaceId = interfaceId;
 		this.childId = childId;
-		this.items = items;
+		this.item = item;
 		this.type = type;
 	}
 
@@ -55,7 +55,7 @@ public final class UpdateItemsMessage extends Message {
 	/**
 	 * Gets the child interface id.
 	 *
-	 * @return The child id.
+	 * @return The child interface id.
 	 */
 	public int getChildId() {
 		return childId;
@@ -71,11 +71,11 @@ public final class UpdateItemsMessage extends Message {
 	}
 
 	/**
-	 * Gets the items.
+	 * Gets the slotted item.
 	 *
-	 * @return The items.
+	 * @return The slotted item.
 	 */
-	public Item[] getItems() {
-		return items;
+	public SlottedItem getSlottedItem() {
+		return item;
 	}
 }

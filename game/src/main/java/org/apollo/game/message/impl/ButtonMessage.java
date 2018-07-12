@@ -10,26 +10,45 @@ import org.apollo.net.message.Message;
 public final class ButtonMessage extends Message {
 
 	/**
-	 * The widget id.
+	 * The interface id.
 	 */
-	private final int widgetId;
+	private final int interfaceId;
+
+	/**
+	 * The button id.
+	 */
+	private final int button;
+
+	/**
+	 * The child button id.
+	 */
+	private final int childButton;
 
 	/**
 	 * Creates the button message.
 	 *
-	 * @param widgetId The widget id.
+	 * @param interfaceId The interface id.
 	 */
-	public ButtonMessage(int widgetId) {
-		this.widgetId = widgetId;
+	public ButtonMessage(int interfaceId, int button, int childButton) {
+		this.interfaceId = interfaceId;
+		this.button = button;
+		this.childButton = childButton;
 	}
 
 	/**
-	 * Gets the widget id.
+	 * Gets the interface id.
 	 *
-	 * @return The widget id.
+	 * @return The interface id.
 	 */
-	public int getWidgetId() {
-		return widgetId;
+	public int getInterfaceId() {
+		return interfaceId;
 	}
 
+	public int getButton() {
+		return button;
+	}
+
+	public int getChildButton() {
+		return childButton;
+	}
 }

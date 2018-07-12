@@ -100,7 +100,7 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 	 */
 	private void decodeLengthShort(ByteBuf buffer) {
 		if (buffer.isReadable()) {
-			length = buffer.readUnsignedByte();
+			length = buffer.readUnsignedShort();
 			if (length != 0) {
 				setState(GameDecoderState.GAME_PAYLOAD);
 			}
@@ -148,7 +148,7 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 					setState(GameDecoderState.GAME_LENGTH_BYTE);
 					break;
 				case VARIABLE_SHORT:
-					setState(GameDecoderState.GAME_LENGTH_BYTE);
+					setState(GameDecoderState.GAME_LENGTH_SHORT);
 					break;
 				case REMAINING:
 					setState(GameDecoderState.GAME_REMAINING);
