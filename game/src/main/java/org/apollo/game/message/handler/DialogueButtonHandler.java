@@ -25,11 +25,11 @@ public final class DialogueButtonHandler extends MessageHandler<ButtonMessage> {
 	@Override
 	public void handle(Player player, ButtonMessage message) {
 		if (player.getInterfaceSet().contains(InterfaceType.DIALOGUE)) {
-			boolean terminate = player.getInterfaceSet().buttonClicked(message.getWidgetId());
-
-			if (terminate) {
-				message.terminate();
-			}
+//			boolean terminate = player.getInterfaceSet().buttonClicked(message.getWidgetId());
+//
+//			if (terminate) {
+//				message.terminate();
+//			}
 		}
 	}
 

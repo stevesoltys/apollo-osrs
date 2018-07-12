@@ -62,8 +62,11 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 			case GAME_OPCODE:
 				decodeOpcode(in, out);
 				break;
-			case GAME_LENGTH:
-				decodeLength(in);
+			case GAME_LENGTH_BYTE:
+				decodeLengthByte(in);
+				break;
+			case GAME_LENGTH_SHORT:
+				decodeLengthShort(in);
 				break;
 			case GAME_PAYLOAD:
 				decodePayload(in, out);
@@ -81,7 +84,21 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 	 *
 	 * @param buffer The buffer.
 	 */
-	private void decodeLength(ByteBuf buffer) {
+	private void decodeLengthByte(ByteBuf buffer) {
+		if (buffer.isReadable()) {
+			length = buffer.readUnsignedByte();
+			if (length != 0) {
+				setState(GameDecoderState.GAME_PAYLOAD);
+			}
+		}
+	}
+
+	/**
+	 * Decodes the length state.
+	 *
+	 * @param buffer The buffer.
+	 */
+	private void decodeLengthShort(ByteBuf buffer) {
 		if (buffer.isReadable()) {
 			length = buffer.readUnsignedByte();
 			if (length != 0) {
@@ -128,7 +145,10 @@ public final class GamePacketDecoder extends StatefulFrameDecoder<GameDecoderSta
 					}
 					break;
 				case VARIABLE_BYTE:
-					setState(GameDecoderState.GAME_LENGTH);
+					setState(GameDecoderState.GAME_LENGTH_BYTE);
+					break;
+				case VARIABLE_SHORT:
+					setState(GameDecoderState.GAME_LENGTH_BYTE);
 					break;
 				case REMAINING:
 					setState(GameDecoderState.GAME_REMAINING);

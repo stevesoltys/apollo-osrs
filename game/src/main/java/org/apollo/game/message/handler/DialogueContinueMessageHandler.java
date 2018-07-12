@@ -24,7 +24,7 @@ public final class DialogueContinueMessageHandler extends MessageHandler<Dialogu
 	@Override
 	public void handle(Player player, DialogueContinueMessage message) {
 		if (player.getInterfaceSet().contains(InterfaceType.DIALOGUE)) {
-			player.getInterfaceSet().continueRequested();
+//			player.getInterfaceSet().continueRequested();
 		}
 	}
 

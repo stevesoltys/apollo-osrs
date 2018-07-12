@@ -11,7 +11,13 @@ public enum GameDecoderState {
 	 * The game length state waits for the packet length. Once it has been received, it sets the state to the payload
 	 * state.
 	 */
-	GAME_LENGTH,
+	GAME_LENGTH_BYTE,
+
+	/**
+	 * The game length state waits for the packet length. Once it has been received, it sets the state to the payload
+	 * state.
+	 */
+	GAME_LENGTH_SHORT,
 
 	/**
 	 * The game opcode state waits for an encrypted opcode. It decrypts it, and will either set the next state to the

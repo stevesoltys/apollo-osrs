@@ -23,18 +23,18 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
         putBlocks(event.getSegment(), blockBuilder);
         packetBuilder.putBits(8, event.getLocalPlayers());
 
-//        for (SynchronizationSegment segment : event.getSegments()) {
-//            SegmentType type = segment.getType();
-//            if (type == SegmentType.REMOVE_MOB) {
-//                putRemoveCharacterUpdate(packetBuilder);
-//            } else if (type == SegmentType.ADD_MOB) {
-//                putAddPlayerUpdate((AddPlayerSegment) segment, event, packetBuilder);
-//                putBlocks(segment, blockBuilder);
-//            } else {
-//                putMovementUpdate(segment, event, packetBuilder);
-//                putBlocks(segment, blockBuilder);
-//            }
-//        }
+        for (SynchronizationSegment segment : event.getSegments()) {
+            SegmentType type = segment.getType();
+            if (type == SegmentType.REMOVE_MOB) {
+                putRemoveCharacterUpdate(packetBuilder);
+            } else if (type == SegmentType.ADD_MOB) {
+                putAddPlayerUpdate((AddPlayerSegment) segment, event, packetBuilder);
+                putBlocks(segment, blockBuilder);
+            } else {
+                putMovementUpdate(segment, event, packetBuilder);
+                putBlocks(segment, blockBuilder);
+            }
+        }
 
         if (blockBuilder.getLength() > 0) {
             packetBuilder.putBits(11, 2047);
@@ -52,14 +52,16 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
     }
 
     private void putAddPlayerUpdate(AddPlayerSegment segment, PlayerSynchronizationMessage event, GamePacketBuilder packetBuilder) {
+		Position player = event.getPosition();
+		Position other = segment.getPosition();
+
+		int yPos = other.getY() - player.getY();
+		int xPos = other.getX() - player.getX();
+
         packetBuilder.putBits(11, segment.getIndex());
         packetBuilder.putBits(1, 1);
+		packetBuilder.putBits(5, xPos);
         packetBuilder.putBits(3, 1);
-        Position player = event.getPosition();
-        Position other = segment.getPosition();
-        int yPos = other.getY() - player.getY();
-        int xPos = other.getX() - player.getX();
-        packetBuilder.putBits(5, xPos);
         packetBuilder.putBits(1, 1);
         packetBuilder.putBits(5, yPos);
     }
@@ -103,6 +105,10 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
         if (blockSet.size() > 0) {
             int mask = 0;
 
+			if (blockSet.contains(ChatBlock.class)) {
+				mask |= 0x10;
+			}
+
             if (blockSet.contains(AppearanceBlock.class)) {
                 mask |= 0x1;
             }
@@ -131,10 +137,6 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
 //                mask |= 4;
 //            }
 //
-//            if (blockSet.contains(ChatBlock.class)) {
-//                mask |= 0x80;
-//            }
-//
 //            if (blockSet.contains(SecondaryHitUpdateBlock.class)) {
 //                mask |= 0x200;
 //            }
@@ -152,6 +154,10 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
             } else {
                 blockBuilder.put(DataType.BYTE, mask);
             }
+
+			if (blockSet.contains(ChatBlock.class)) {
+				putChatBlock(blockSet.get(ChatBlock.class), blockBuilder);
+			}
 
             if (blockSet.contains(AppearanceBlock.class)) {
                 putAppearanceBlock(blockSet.get(AppearanceBlock.class), blockBuilder);
@@ -181,9 +187,6 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
 //                putHitUpdateBlock(blockSet.get(HitUpdateBlock.class), blockBuilder);
 //            }
 //
-//            if (blockSet.contains(ChatBlock.class)) {
-//                putChatBlock(blockSet.get(ChatBlock.class), blockBuilder);
-//            }
 //
 //            if (blockSet.contains(SecondaryHitUpdateBlock.class)) {
 //                putSecondHitUpdateBlock(blockSet.get(SecondaryHitUpdateBlock.class), blockBuilder);
@@ -361,12 +364,13 @@ public class PlayerSynchronizationMessageEncoder extends MessageEncoder<PlayerSy
 
     private void putChatBlock(ChatBlock chatBlock, GamePacketBuilder blockBuilder) {
 
-        blockBuilder.put(DataType.SHORT, DataOrder.LITTLE, DataTransformation.ADD,
+        blockBuilder.put(DataType.SHORT, DataOrder.LITTLE,
                 (chatBlock.getTextColor() & 0xFF) << 8 | chatBlock.getTextEffects() & 0xFF);
-        blockBuilder.put(DataType.BYTE, DataTransformation.ADD, chatBlock.getPrivilegeLevel().toInteger());
+        blockBuilder.put(DataType.BYTE, DataTransformation.NEGATE, chatBlock.getPrivilegeLevel().toInteger());
         byte[] compressedMessage = chatBlock.getCompressedMessage();
-        blockBuilder.put(DataType.BYTE, DataTransformation.SUBTRACT, compressedMessage.length);
-        blockBuilder.putBytes(compressedMessage);
+		blockBuilder.put(DataType.BYTE, DataTransformation.ADD, 0);
+		blockBuilder.put(DataType.BYTE, DataTransformation.NEGATE, compressedMessage.length);
+        blockBuilder.putBytesReverse(DataTransformation.ADD, compressedMessage);
     }
 
     private void putAnimationBlock(AnimationBlock animationBlock, GamePacketBuilder blockBuilder) {

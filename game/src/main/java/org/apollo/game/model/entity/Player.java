@@ -1,7 +1,6 @@
 package org.apollo.game.model.entity;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import org.apollo.game.message.impl.*;
 import org.apollo.game.model.Appearance;
 import org.apollo.game.model.Position;
@@ -15,7 +14,6 @@ import org.apollo.game.model.entity.setting.PrivilegeLevel;
 import org.apollo.game.model.entity.setting.ScreenBrightness;
 import org.apollo.game.model.event.impl.LoginEvent;
 import org.apollo.game.model.event.impl.LogoutEvent;
-import org.apollo.game.model.inter.InterfaceConstants;
 import org.apollo.game.model.inter.InterfaceListener;
 import org.apollo.game.model.inter.InterfaceSet;
 import org.apollo.game.model.inter.bank.BankConstants;
@@ -716,18 +714,14 @@ public final class Player extends Mob {
 	 */
 	public void sendInitialMessages() {
 		send(new RegionChangeMessage(position));
-		send(new SetWidgetPaneMessage(548));
-		send(new IdAssignmentMessage(index, members));
+
+		interfaceSet.sendDefaultUserInterfaces();
+
 		updateAppearance();
 		sendMessage("Welcome to RuneScape.");
 
 		if (isMuted()) {
 			sendMessage("You are currently muted. Other players will not see your chat messages.");
-		}
-
-		int[] tabs = InterfaceConstants.DEFAULT_INVENTORY_TABS;
-		for (int tab = 0; tab < tabs.length; tab++) {
-			send(new SwitchTabInterfaceMessage(tab, tabs[tab]));
 		}
 
 //		inventory.forceRefresh();
@@ -753,13 +747,13 @@ public final class Player extends Mob {
 	 * @param text The text to display on the interface.
 	 */
 	public void sendQuestInterface(List<String> text) {
-		int size = text.size(), lines = InterfaceConstants.QUEST_TEXT.length;
-		Preconditions.checkArgument(size <= lines, "List contains too much text to display on this interface.");
-
-		for (int pos = 0; pos < lines; pos++) {
-			send(new SetWidgetTextMessage(InterfaceConstants.QUEST_TEXT[pos], pos < size ? text.get(pos) : ""));
-		}
-		interfaceSet.openWindow(InterfaceConstants.QUEST_INTERFACE);
+//		int size = text.size(), lines = InterfaceConstants.QUEST_TEXT.length;
+//		Preconditions.checkArgument(size <= lines, "List contains too much text to display on this interface.");
+//
+//		for (int pos = 0; pos < lines; pos++) {
+//			send(new SetWidgetTextMessage(InterfaceConstants.QUEST_TEXT[pos], pos < size ? text.get(pos) : ""));
+//		}
+//		interfaceSet.openWindow(InterfaceConstants.QUEST_INTERFACE);
 	}
 
 	/**

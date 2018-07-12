@@ -9,27 +9,54 @@ import org.apollo.net.message.Message;
  */
 public final class OpenInterfaceMessage extends Message {
 
-	/**
-	 * The interface id.
-	 */
-	private final int id;
+	private int layerId;
+	private int windowId;
+	private int targetInterfaceId;
+	private boolean walkable;
 
 	/**
-	 * Creates the message with the specified interface id.
+	 * Creates the event with the specified interface id.
 	 *
-	 * @param id The interface id.
+	 * @param layerId The layer.
+	 * @param windowId The window id.
+	 * @param targetInterfaceId The interface id.
+	 * @param walkable Whether or not the player can walk with this interface
+	 * open.
 	 */
-	public OpenInterfaceMessage(int id) {
-		this.id = id;
+	public OpenInterfaceMessage(int layerId, int windowId, int targetInterfaceId, boolean walkable) {
+		this.layerId = layerId;
+		this.windowId = windowId;
+		this.targetInterfaceId = targetInterfaceId;
+		this.walkable = walkable;
 	}
 
 	/**
-	 * Gets the interface id.
+	 * Creates the event with the specified interface id.
 	 *
-	 * @return The interface id.
+	 * @param layerId The layer.
+	 * @param windowId The window id.
+	 * @param targetInterfaceId The interface id.
 	 */
-	public int getId() {
-		return id;
+	public OpenInterfaceMessage(int layerId, int windowId, int targetInterfaceId) {
+		this.layerId = layerId;
+		this.windowId = windowId;
+		this.targetInterfaceId = targetInterfaceId;
+		this.walkable = false;
 	}
 
+	public int getLayerId() {
+		return layerId;
+	}
+
+	public int getWindowId() {
+		return windowId;
+	}
+
+	public int getTargetInterfaceId() {
+		return targetInterfaceId;
+	}
+
+	public boolean isWalkable() {
+		return walkable; //XXX: fix
+	}
 }

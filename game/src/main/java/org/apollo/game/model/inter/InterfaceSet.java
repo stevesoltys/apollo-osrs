@@ -1,31 +1,24 @@
 package org.apollo.game.model.inter;
 
+import org.apollo.game.message.impl.CloseInterfaceMessage;
+import org.apollo.game.message.impl.OpenInterfaceMessage;
+import org.apollo.game.message.impl.SendWindowPaneMessage;
+import org.apollo.game.model.entity.Player;
+import org.apollo.game.model.entity.attr.AttributeDefinition;
+import org.apollo.game.model.entity.attr.AttributeMap;
+import org.apollo.game.model.entity.attr.AttributePersistence;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-
-import org.apollo.game.message.handler.MessageHandlerChain;
-import org.apollo.game.message.impl.CloseInterfaceMessage;
-import org.apollo.game.message.impl.EnterAmountMessage;
-import org.apollo.game.message.impl.OpenDialogueInterfaceMessage;
-import org.apollo.game.message.impl.OpenDialogueOverlayMessage;
-import org.apollo.game.message.impl.OpenInterfaceMessage;
-import org.apollo.game.message.impl.OpenInterfaceSidebarMessage;
-import org.apollo.game.message.impl.OpenOverlayMessage;
-import org.apollo.game.message.impl.OpenSidebarMessage;
-import org.apollo.game.model.entity.Player;
-import org.apollo.game.model.event.impl.CloseInterfacesEvent;
-import org.apollo.game.model.inter.dialogue.DialogueListener;
-import org.apollo.game.model.inv.InventoryListener;
 
 /**
  * Represents the set of interfaces the player has open.
- * <p>
+ * <p/>
  * This class manages all six distinct types of interface (the last two are not present on 317 servers).
- * <p>
+ * <p/>
  * <ul>
- * <li><strong>Windows:</strong> Interfaces such as the bank, the wilderness warning screen, the trade screen,
- * etc.</li>
+ * <li><strong>Windows:</strong> Interfaces such as the bank, the wilderness warning screen, the trade screen, etc.</li>
  * <li><strong>Overlays:</strong> Displayed in the same place as windows, but don't prevent a player from moving e.g.
  * the wilderness level indicator.</li>
  * <li><strong>Dialogues:</strong> Interfaces displayed over the chat box.</li>
@@ -39,30 +32,30 @@ import org.apollo.game.model.inv.InventoryListener;
  */
 public final class InterfaceSet {
 
-	/**
-	 * A map of open interfaces.
-	 */
-	private final Map<InterfaceType, Integer> interfaces = new HashMap<>();
-
-	/**
-	 * The player whose interfaces are being managed.
-	 */
-	private final Player player;
+	static {
+		AttributeMap.define("selected_window_pane",
+			AttributeDefinition.forInt(InterfaceConstants.DEFAULT_WINDOW_PANE, AttributePersistence.PERSISTENT));
+	}
 
 	/**
 	 * The current enter amount listener.
 	 */
-	private Optional<EnterAmountListener> amountListener = Optional.empty();
+	private EnterAmountListener amountListener;
 
 	/**
-	 * The current chat box dialogue listener.
+	 * A map of open interfaces.
 	 */
-	private Optional<DialogueListener> dialogueListener = Optional.empty();
+	private Map<InterfaceType, Integer> interfaces = new HashMap<>();
 
 	/**
 	 * The current listener.
 	 */
-	private Optional<InterfaceListener> listener = Optional.empty();
+	private InterfaceListener listener;
+
+	/**
+	 * The player whose interfaces are being managed.
+	 */
+	private final Player player; // TODO: maybe switch to a listener system like the inventory?
 
 	/**
 	 * Creates an interface set.
@@ -74,27 +67,172 @@ public final class InterfaceSet {
 	}
 
 	/**
-	 * Called when the player has clicked the specified button. Notifies the current dialogue listener.
-	 *
-	 * @param button The button.
-	 * @return {@code true} if the {@link MessageHandlerChain} should be broken.
-	 */
-	public boolean buttonClicked(int button) {
-		return dialogueListener.isPresent() && dialogueListener.get().buttonClicked(button);
-	}
-
-	/**
 	 * Closes the current open interface(s).
 	 */
 	public void close() {
-		if (interfaces.size() != 0) {
-			CloseInterfacesEvent event = new CloseInterfacesEvent(player);
+		closeWindow();
+		closeSidebarInterface();
+		closeDialogueInterface();
+	}
 
-			if (player.getWorld().submit(event)) {
-				closeAndNotify();
-				player.send(new CloseInterfaceMessage());
-			}
+	/**
+	 * Sent by the client when it has closed an interface.
+	 */
+	public void interfaceClosed() {
+		closeAndNotify();
+	}
+
+	/**
+	 * Closes the current sidebar interface, if there is one.
+	 */
+	public void closeSidebarInterface() {
+		if (interfaces.containsKey(InterfaceType.SIDEBAR)) {
+			interfaces.remove(InterfaceType.SIDEBAR);
+			player.send(new CloseInterfaceMessage(InterfaceConstants.DEFAULT_WINDOW_PANE,
+				InterfaceConstants.ScreenArea.SIDEBAR));
 		}
+	}
+
+	/**
+	 * Closes the current window, if there is one.
+	 */
+	public void closeWindow() {
+		if (interfaces.containsKey(InterfaceType.WINDOW)) {
+			interfaces.remove(InterfaceType.WINDOW);
+			listener = null;
+			player.send(new CloseInterfaceMessage(InterfaceConstants.DEFAULT_WINDOW_PANE,
+				InterfaceConstants.ScreenArea.GAME));
+		}
+	}
+
+	/**
+	 * Closes any interfaces in the chat box area.
+	 */
+	public void closeDialogueInterface() {
+		if (interfaces.containsKey(InterfaceType.DIALOGUE)) {
+			interfaces.remove(InterfaceType.DIALOGUE);
+			player.send(new CloseInterfaceMessage(InterfaceConstants.DEFAULT_WINDOW_PANE,
+				InterfaceConstants.ScreenArea.CHAT));
+		}
+		// TODO: Clear any input so it's empty next time we open it. CS2 necessary.
+	}
+
+	/**
+	 * Opens a sidebar interface.
+	 */
+	public void openSidebarInterface(int interfaceId) {
+		interfaces.put(InterfaceType.SIDEBAR, interfaceId);
+		player.send(new OpenInterfaceMessage(InterfaceConstants.ScreenArea.SIDEBAR.getId(),
+			InterfaceConstants.DEFAULT_WINDOW_PANE, interfaceId));
+	}
+
+	/**
+	 * Sends a sidebar interface.
+	 */
+	public void sendUserInterface(int layer, int interfaceId) {
+		player.send(new OpenInterfaceMessage(layer, InterfaceConstants.DEFAULT_WINDOW_PANE, interfaceId, true));
+	}
+
+	/**
+	 * Opens a dialogue interface.
+	 *
+	 * @param interfaceId the dialogue interface to send.
+	 */
+	public void openDialogueInterface(int interfaceId) {
+		interfaces.put(InterfaceType.DIALOGUE, interfaceId);
+		player.send(new OpenInterfaceMessage(InterfaceConstants.ScreenArea.CHAT.getId(),
+			InterfaceConstants.DEFAULT_WINDOW_PANE, interfaceId));
+	}
+
+	/**
+	 * Sends the default user interfaces.
+	 */
+	public void sendDefaultUserInterfaces() {
+		openWindowPane(InterfaceConstants.DEFAULT_WINDOW_PANE);
+
+		Arrays.stream(InterfaceConstants.UserInterface.values())
+			.filter(ui -> ui.getWindowId() == InterfaceConstants.DEFAULT_WINDOW_PANE)
+			.forEach(ui -> {
+				player.send(new OpenInterfaceMessage(ui.getLayer(), ui.getWindowId(), ui.getInterfaceId(), true));
+			});
+	}
+
+	/**
+	 * Opens the enter amount dialog.
+	 *
+	 * @param listener The enter amount listener.
+	 */
+	public void openEnterAmountDialogue(EnterAmountListener listener) {
+		this.amountListener = listener;
+
+		//TODO: Re-add this later.
+//        player.send(new RunClientScriptEvent(108, new Object[]{"Enter amount:"}, "s"));
+	}
+
+	/**
+	 * Opens a window and inventory sidebar.
+	 *
+	 * @param windowId  The window's id.
+	 * @param sidebarId The sidebar's id.
+	 */
+	public void openWindowWithSidebar(int windowId, int sidebarId) {
+		openWindowWithSidebar(null, windowId, sidebarId);
+	}
+
+	/**
+	 * Opens a window and inventory sidebar with the specified listener.
+	 *
+	 * @param listener  The listener for this interface.
+	 * @param windowId  The window's id.
+	 * @param sidebarId The sidebar's id.
+	 */
+	public void openWindowWithSidebar(InterfaceListener listener, int windowId, int sidebarId) {
+		openWindow(listener, windowId);
+		openSidebarInterface(sidebarId);
+	}
+
+	/**
+	 * Opens a window pane.
+	 *
+	 * @param windowPaneId The window pane's id.
+	 */
+	public void openWindowPane(int windowPaneId) {
+		interfaces.put(InterfaceType.WINDOW_PANE, windowPaneId);
+		player.send(new SendWindowPaneMessage(windowPaneId));
+	}
+
+	/**
+	 * Opens a window interface with no listener in the default root window.
+	 *
+	 * @param windowId The window's id.
+	 */
+	public void openWindow(int windowId) {
+		openWindow(null, windowId);
+	}
+
+	/**
+	 * Opens a window interface with the specified listener in the default root
+	 * window.
+	 *
+	 * @param listener The listener for this interface.
+	 * @param windowId The window's id.
+	 */
+	public void openWindow(InterfaceListener listener, int windowId) {
+		closeAndNotify();
+		this.listener = listener;
+
+		interfaces.put(InterfaceType.WINDOW, windowId);
+		player.send(new OpenInterfaceMessage(InterfaceConstants.ScreenArea.GAME.getId(),
+			InterfaceConstants.DEFAULT_WINDOW_PANE, windowId));
+	}
+
+	/**
+	 * Gets the interface map.
+	 *
+	 * @return the interface map
+	 */
+	public Map<InterfaceType, Integer> getInterfaces() {
+		return interfaces;
 	}
 
 	/**
@@ -118,177 +256,30 @@ public final class InterfaceSet {
 	}
 
 	/**
-	 * Called when the player has clicked the "Click here to continue" button on a dialogue.
+	 * An internal method for closing the open window and notifying the
+	 * listener, but not sending any events.
 	 */
-	public void continueRequested() {
-		if (dialogueListener.isPresent()) {
-			dialogueListener.get().continued();
+	private void closeAndNotify() {
+		amountListener = null;
+
+		interfaces.remove(InterfaceType.WINDOW);
+		if (listener != null) {
+			listener.interfaceClosed();
+			listener = null;
 		}
 	}
 
 	/**
-	 * Called when the client has entered the specified amount. Notifies the current listener.
+	 * Called when the client has entered the specified amount. Notifies the
+	 * current listener.
 	 *
 	 * @param amount The amount.
 	 */
 	public void enteredAmount(int amount) {
-		if (amountListener.isPresent()) {
-			amountListener.get().amountEntered(amount);
-			amountListener = Optional.empty();
+		if (amountListener != null) {
+			amountListener.amountEntered(amount);
+			amountListener = null;
 		}
-	}
-
-	/**
-	 * Sent by the client when it has closed an interface.
-	 */
-	public void interfaceClosed() {
-		closeAndNotify();
-	}
-
-	/**
-	 * Opens a dialogue interface.
-	 *
-	 * @param listener The {@link DialogueListener}.
-	 * @param dialogueId The dialogue id.
-	 */
-	public void openDialogue(DialogueListener listener, int dialogueId) {
-		closeAndNotify();
-
-		dialogueListener = Optional.ofNullable(listener);
-		this.listener = Optional.ofNullable(listener);
-
-		interfaces.put(InterfaceType.DIALOGUE, dialogueId);
-		player.send(new OpenDialogueInterfaceMessage(dialogueId));
-	}
-
-	/**
-	 * Opens a dialogue.
-	 *
-	 * @param dialogueId The dialogue id.
-	 */
-	public void openDialogue(int dialogueId) {
-		openDialogue(null, dialogueId);
-	}
-
-	/**
-	 * Opens a dialogue overlay interface.
-	 *
-	 * @param listener The {@link DialogueListener}.
-	 * @param dialogueId The dialogue id.
-	 */
-	public void openDialogueOverlay(DialogueListener listener, int dialogueId) {
-		closeAndNotify();
-
-		dialogueListener = Optional.ofNullable(listener);
-		this.listener = Optional.ofNullable(listener);
-
-		interfaces.put(InterfaceType.DIALOGUE, dialogueId);
-		player.send(new OpenDialogueOverlayMessage(dialogueId));
-	}
-
-	/**
-	 * Opens a dialogue overlay.
-	 *
-	 * @param dialogueId The dialogue id.
-	 */
-	public void openDialogueOverlay(int dialogueId) {
-		openDialogueOverlay(null, dialogueId);
-	}
-
-	/**
-	 * Opens the enter amount dialogue.
-	 *
-	 * @param listener The enter amount listener.
-	 */
-	public void openEnterAmountDialogue(EnterAmountListener listener) {
-		amountListener = Optional.of(listener);
-		player.send(new EnterAmountMessage());
-	}
-
-	/**
-	 * Opens an overlay interface.
-	 *
-	 * @param overlay The overlay id.
-	 */
-	public void openOverlay(int overlay) {
-		interfaces.put(InterfaceType.OVERLAY, overlay);
-		player.send(new OpenOverlayMessage(overlay));
-	}
-
-	/**
-	 * Opens an sidebar interface.
-	 *
-	 * @param sidebar The sidebar id.
-	 */
-	public void openSidebar(int sidebar) {
-		closeAndNotify();
-		interfaces.put(InterfaceType.SIDEBAR, sidebar);
-
-		player.send(new OpenSidebarMessage(sidebar));
-	}
-
-	/**
-	 * Opens an sidebar interface with the specified {@link InventoryListener}.
-	 *
-	 * @param listener The listener.
-	 * @param sidebar The sidebar id.
-	 */
-	public void openSidebar(InterfaceListener listener, int sidebar) {
-		closeAndNotify();
-		this.listener = Optional.ofNullable(listener);
-		interfaces.put(InterfaceType.SIDEBAR, sidebar);
-
-		player.send(new OpenSidebarMessage(sidebar));
-	}
-
-	/**
-	 * Opens a window.
-	 *
-	 * @param windowId The window's id.
-	 */
-	public void openWindow(int windowId) {
-		openWindow(null, windowId);
-	}
-
-	/**
-	 * Opens a window with the specified listener.
-	 *
-	 * @param listener The listener for this interface.
-	 * @param windowId The window's id.
-	 */
-	public void openWindow(InterfaceListener listener, int windowId) {
-		closeAndNotify();
-		this.listener = Optional.ofNullable(listener);
-
-		interfaces.put(InterfaceType.WINDOW, windowId);
-		player.send(new OpenInterfaceMessage(windowId));
-	}
-
-	/**
-	 * Opens a window and inventory sidebar.
-	 *
-	 * @param windowId The window's id.
-	 * @param sidebarId The sidebar's id.
-	 */
-	public void openWindowWithSidebar(int windowId, int sidebarId) {
-		openWindowWithSidebar(null, windowId, sidebarId);
-	}
-
-	/**
-	 * Opens a window and inventory sidebar with the specified listener.
-	 *
-	 * @param listener The listener for this interface.
-	 * @param windowId The window's id.
-	 * @param sidebarId The sidebar's id.
-	 */
-	public void openWindowWithSidebar(InterfaceListener listener, int windowId, int sidebarId) {
-		closeAndNotify();
-		this.listener = Optional.ofNullable(listener);
-
-		interfaces.put(InterfaceType.WINDOW, windowId);
-		interfaces.put(InterfaceType.SIDEBAR, sidebarId);
-
-		player.send(new OpenInterfaceSidebarMessage(windowId, sidebarId));
 	}
 
 	/**
@@ -299,20 +290,4 @@ public final class InterfaceSet {
 	public int size() {
 		return interfaces.size();
 	}
-
-	/**
-	 * An internal method for closing the interface, notifying the listener if appropriate, but not sending any
-	 * messages.
-	 */
-	private void closeAndNotify() {
-		amountListener = Optional.empty();
-		dialogueListener = Optional.empty();
-
-		interfaces.clear();
-		if (listener.isPresent()) {
-			listener.get().interfaceClosed();
-			listener = Optional.empty();
-		}
-	}
-
 }

@@ -6,36 +6,39 @@ package org.apollo.game.model.inter;
  * @author Graham
  */
 public enum InterfaceType {
+    /**
+     * TODO: What is this..?
+     */
+    WINDOW_PANE,
 
-	/**
-	 * An interface that appears in the chat box.
-	 */
-	DIALOGUE,
+    /**
+     * A window is an interface which occupies the game screen.
+     */
+    WINDOW,
 
-	/**
-	 * An interface shown behind a fullscreen window.
-	 */
-	FULLSCREEN_BACKGROUND,
+    /**
+     * An overlay is an interface which occupies the game screen like a window,
+     * however, you can walk around and perform actions still.
+     */
+    OVERLAY,
 
-	/**
-	 * An interface shown in full screen mode.
-	 */
-	FULLSCREEN_WINDOW,
+    /**
+     * A dialogue is an interface which appears in the chat box.
+     */
+    DIALOGUE,
 
-	/**
-	 * An interface that occupies the game screen like a window, but the player can still perform actions without the
-	 * interface closing.
-	 */
-	OVERLAY,
+    /**
+     * An interface which displays over the inventory area.
+     */
+    SIDEBAR,
 
-	/**
-	 * An interface displayed over the inventory area.
-	 */
-	SIDEBAR,
+    /**
+     * An interface which is shown in full screen mode.
+     */
+    FULLSCREEN_WINDOW,
 
-	/**
-	 * An interface that occupies the game screen.
-	 */
-	WINDOW;
-
+    /**
+     * An interface which is shown behind a fullscreen window.
+     */
+    FULLSCREEN_BACKGROUND
 }

@@ -8,14 +8,14 @@ import org.apollo.net.message.Message;
  *
  * @author Steve Soltys
  */
-public class SetWidgetPaneMessage extends Message {
+public class SendWindowPaneMessage extends Message {
 
     /**
      * The window pane id.
      */
     private int id;
 
-    public SetWidgetPaneMessage(int id) {
+    public SendWindowPaneMessage(int id) {
         this.id = id;
     }
 
