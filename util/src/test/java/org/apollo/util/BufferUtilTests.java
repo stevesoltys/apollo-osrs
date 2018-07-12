@@ -22,7 +22,7 @@ public final class BufferUtilTests {
 	public void byteBufString() {
 		ByteBuf buffer = Unpooled.buffer(6 * Byte.BYTES);
 
-		buffer.writeBytes(new byte[]{ 'H', 'e', 'l', 'l', 'o', 10 });
+		buffer.writeBytes(new byte[]{ 'H', 'e', 'l', 'l', 'o', 0 });
 		assertEquals("Hello", BufferUtil.readString(buffer));
 
 		buffer = Unpooled.buffer(2 * Byte.BYTES);
