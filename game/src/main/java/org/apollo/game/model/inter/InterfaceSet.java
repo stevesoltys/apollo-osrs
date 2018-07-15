@@ -1,9 +1,6 @@
 package org.apollo.game.model.inter;
 
-import org.apollo.game.message.impl.CloseInterfaceMessage;
-import org.apollo.game.message.impl.EnterAmountMessage;
-import org.apollo.game.message.impl.OpenInterfaceMessage;
-import org.apollo.game.message.impl.SendWindowPaneMessage;
+import org.apollo.game.message.impl.*;
 import org.apollo.game.model.entity.Player;
 import org.apollo.game.model.entity.attr.AttributeDefinition;
 import org.apollo.game.model.entity.attr.AttributeMap;
@@ -84,6 +81,11 @@ public final class InterfaceSet {
 			interfaces.remove(InterfaceType.DIALOGUE);
 			closeInterface(ScreenArea.CHAT);
 		}
+
+		if(amountListener != null) {
+			player.send(new CloseEnterAmountMessage());
+		}
+
 		// TODO: Clear any input so it's empty next time we open it. CS2 necessary.
 	}
 

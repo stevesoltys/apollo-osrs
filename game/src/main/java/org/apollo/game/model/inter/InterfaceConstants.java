@@ -7,6 +7,8 @@ package org.apollo.game.model.inter;
  */
 public class InterfaceConstants {
 
+	public static final int EQUIPMENT_ID = 387;
+
 	/**
 	 * The layer and interface ids of the side bar tabs.
 	 * Interesting note - the layers are also considered screen areas.
@@ -19,7 +21,7 @@ public class InterfaceConstants {
 		SKILLS(548, 64, 320),
 		QUESTS(548, 65, 399),
 		INVENTORY(548, 66, 149),
-		EQUIPMENT(548, 67, 387),
+		EQUIPMENT(548, 67, EQUIPMENT_ID),
 		PRAYER(548, 68, 541),
 		SPELLBOOK(548, 69, 218),
 		CLAN_CHAT(548, 70, 589),
@@ -36,7 +38,7 @@ public class InterfaceConstants {
 		SKILLS_RESIZABLE(161, 62, 320),
 		QUESTS_RESIZABLE(161, 63, 399),
 		INVENTORY_RESIZABLE(161, 64, 149),
-		EQUIPMENT_RESIZABLE(161, 65, 387),
+		EQUIPMENT_RESIZABLE(161, 65, EQUIPMENT_ID),
 		PRAYER_RESIZABLE(161, 66, 541),
 		SPELLBOOK_RESIZABLE(161, 67, 218),
 		CLAN_CHAT_RESIZABLE(161, 68, 589),
@@ -53,7 +55,7 @@ public class InterfaceConstants {
 		SKILLS_REARRANGED(164, 60, 320),
 		QUESTS_REARRANGED(164, 61, 399),
 		INVENTORY_REARRANGED(164, 62, 149),
-		EQUIPMENT_REARRANGED(164, 63, 387),
+		EQUIPMENT_REARRANGED(164, 63, EQUIPMENT_ID),
 		PRAYER_REARRANGED(164, 64, 541),
 		SPELLBOOK_REARRANGED(164, 65, 218),
 		CLAN_CHAT_REARRANGED(164, 66, 589),

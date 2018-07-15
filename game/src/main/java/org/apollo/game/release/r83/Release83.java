@@ -113,6 +113,7 @@ public class Release83 extends Release {
 		register(UpdateRunEnergyMessage.class, new UpdateRunEnergyEncoder());
 		register(ServerChatMessage.class, new ServerMessageMessageEncoder());
 		register(EnterAmountMessage.class, new EnterAmountMessageEncoder());
+		register(CloseEnterAmountMessage.class, new CloseEnterAmountMessageEncoder());
 
 		WalkMessageDecoder walkingDecoder = new WalkMessageDecoder();
 		register(177, walkingDecoder);

@@ -3,9 +3,10 @@ package org.apollo.game.message.handler;
 import org.apollo.game.message.impl.ButtonMessage;
 import org.apollo.game.model.Item;
 import org.apollo.game.model.World;
+import org.apollo.game.model.entity.EquipmentConstants;
 import org.apollo.game.model.entity.Player;
+import org.apollo.game.model.inter.InterfaceConstants;
 import org.apollo.game.model.inv.Inventory;
-import org.apollo.game.model.inv.SynchronizationInventoryListener;
 
 /**
  * A {@link MessageHandler} that removes equipped items.
@@ -24,13 +25,56 @@ public final class RemoveEquippedItemHandler extends MessageHandler<ButtonMessag
 		super(world);
 	}
 
+	/**
+	 * Converts a button to a slot.
+	 *
+	 * @param button The button.
+	 * @return The slot.
+	 * @throws IllegalArgumentException If the option is invalid.
+	 */
+	private static int buttonToSlot(int button) {
+
+		switch (button) {
+			case 6:
+				return EquipmentConstants.HAT;
+			case 7:
+				return EquipmentConstants.CAPE;
+			case 8:
+				return EquipmentConstants.AMULET;
+			case 9:
+				return EquipmentConstants.WEAPON;
+			case 10:
+				return EquipmentConstants.CHEST;
+			case 11:
+				return EquipmentConstants.SHIELD;
+			case 12:
+				return EquipmentConstants.LEGS;
+			case 13:
+				return EquipmentConstants.HANDS;
+			case 14:
+				return EquipmentConstants.FEET;
+			case 15:
+				return EquipmentConstants.RING;
+			case 16:
+				return EquipmentConstants.ARROWS;
+		}
+
+		return -1;
+	}
+
 	@Override
 	public void handle(Player player, ButtonMessage message) {
-		if (message.getIndex() == 1 && message.getInterfaceId() == SynchronizationInventoryListener.EQUIPMENT_ID) {
+		if (message.getIndex() == 1 && message.getInterfaceId() == InterfaceConstants.EQUIPMENT_ID) {
 			Inventory inventory = player.getInventory();
 			Inventory equipment = player.getEquipment();
 
-			int slot = message.getChildButton();
+			int slot = buttonToSlot(message.getButton());
+
+			if (slot == -1) {
+				message.terminate();
+				return;
+			}
+
 			Item item = equipment.get(slot);
 			int id = item.getId();
 
@@ -40,7 +84,7 @@ public final class RemoveEquippedItemHandler extends MessageHandler<ButtonMessag
 				return;
 			}
 
-			boolean removed = true;
+			boolean removed;
 
 			inventory.stopFiringEvents();
 			equipment.stopFiringEvents();

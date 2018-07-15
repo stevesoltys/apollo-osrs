@@ -46,7 +46,6 @@ public final class ItemButtonVerificationHandler extends MessageHandler<ButtonMe
 	static {
 		inventories.put(SynchronizationInventoryListener.INVENTORY_ID, Player::getInventory);
 		inventories.put(BankConstants.SIDEBAR_ID, Player::getInventory);
-		inventories.put(SynchronizationInventoryListener.EQUIPMENT_ID, Player::getEquipment);
 		inventories.put(BankConstants.WINDOW_ID, Player::getBank);
 	}
 
