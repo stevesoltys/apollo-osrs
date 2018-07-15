@@ -1,6 +1,5 @@
 package org.apollo.game.release.r83;
 
-import org.apollo.game.message.handler.ItemOptionMessageDecoder;
 import org.apollo.game.message.impl.*;
 import org.apollo.net.meta.PacketMetaDataGroup;
 import org.apollo.net.release.Release;
@@ -9,38 +8,6 @@ import org.apollo.net.release.Release;
  * @author Steve Soltys
  */
 public class Release83 extends Release {
-
-	/**
-	 * The incoming packet lengths array.
-	 */
-	public static final int[] PACKET_LENGTHS = {
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 0
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 10
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 20
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 30
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 40
-		-3, -3, -3, -3, -3, -1, -3, -3, -3, -3, // 50
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 60
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 70
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 80
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 90
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 100
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 110
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, 5, // 120
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 130
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 140
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 150
-		-3, -1, -3, -3, -3, -3, -3, -3, -3, -3, // 160
-		-3, -3, -3, -3, -3, -3, -3, -1, -3, -3, // 170
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 180
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 190
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 200
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 210
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 220
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 230
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, // 240
-		-3, -3, -3, -3, -3, -3 // 250
-	};
 
 	/**
 	 * Incoming packet sizes array.
@@ -138,6 +105,8 @@ public class Release83 extends Release {
 		register(NpcSynchronizationMessage.class, new NpcSynchronizationMessageEncoder());
 		register(SendWindowPaneMessage.class, new SendWindowPaneEncoder());
 		register(OpenInterfaceMessage.class, new OpenInterfaceMessageEncoder());
+		register(CloseInterfaceMessage.class, new CloseInterfaceMessageEncoder());
+		register(AccessMaskMessage.class, new AccessMaskMessageEncoder());
 
 		register(UpdateSkillMessage.class, new UpdateSkillMessageEncoder());
 		register(UpdateItemsMessage.class, new UpdateItemsMessageEncoder());
@@ -155,6 +124,15 @@ public class Release83 extends Release {
 		ItemOptionMessageDecoder itemOptionMessageDecoder = new ItemOptionMessageDecoder();
 		register(32, itemOptionMessageDecoder);
 
-		register(255, new ButtonMessageDecoder());
+		ButtonMessageDecoder buttonMessageDecoder = new ButtonMessageDecoder();
+		register(149, buttonMessageDecoder);
+		register(255, buttonMessageDecoder);
+		register(194, buttonMessageDecoder);
+		register(159, buttonMessageDecoder);
+		register(148, buttonMessageDecoder);
+		register(0, buttonMessageDecoder);
+		register(245, buttonMessageDecoder);
+		register(77, buttonMessageDecoder);
+		register(153, buttonMessageDecoder);
 	}
 }

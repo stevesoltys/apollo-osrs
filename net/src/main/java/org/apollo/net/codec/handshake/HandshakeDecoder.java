@@ -37,8 +37,8 @@ public final class HandshakeDecoder extends ByteToMessageDecoder {
 				ctx.pipeline().addFirst("loginEncoder", new LoginEncoder());
 				ctx.pipeline().addAfter("handshakeDecoder", "loginDecoder", new LoginDecoder());
 
-				ByteBuf buf = ctx.alloc().buffer(1).writeByte(0);
-				ctx.channel().writeAndFlush(buf);
+//				ctx.channel().writeAndFlush(ctx.alloc().buffer(9).writeLong(0).writeByte(0));
+				ctx.channel().writeAndFlush(ctx.alloc().buffer(1).writeByte(0));
 				break;
 
 			case HandshakeConstants.SERVICE_UPDATE:
@@ -52,13 +52,15 @@ public final class HandshakeDecoder extends ByteToMessageDecoder {
 				return;
 		}
 
-		out.add(new HandshakeMessage(id));
+		HandshakeMessage message = new HandshakeMessage(id);
+
+		out.add(message);
 
 		if (buffer.isReadable()) {
 			out.add(buffer.readBytes(buffer.readableBytes()));
 		}
 
-		ctx.pipeline().remove(this);
+		ctx.pipeline().remove(HandshakeDecoder.class);
 	}
 
 }

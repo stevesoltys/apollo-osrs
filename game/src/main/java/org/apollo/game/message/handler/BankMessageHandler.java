@@ -1,5 +1,6 @@
 package org.apollo.game.message.handler;
 
+import org.apollo.game.message.impl.ButtonMessage;
 import org.apollo.game.message.impl.ItemActionMessage;
 import org.apollo.game.model.World;
 import org.apollo.game.model.entity.Player;
@@ -14,31 +15,7 @@ import org.apollo.game.model.inter.bank.BankWithdrawEnterAmountListener;
  *
  * @author Graham
  */
-public final class BankMessageHandler extends MessageHandler<ItemActionMessage> {
-
-	/**
-	 * Converts an option to an amount.
-	 *
-	 * @param option The option.
-	 * @return The amount.
-	 * @throws IllegalArgumentException If the option is invalid.
-	 */
-	private static int optionToAmount(int option) {
-		switch (option) {
-			case 1:
-				return 1;
-			case 2:
-				return 5;
-			case 3:
-				return 10;
-			case 4:
-				return Integer.MAX_VALUE;
-			case 5:
-				return -1;
-		}
-
-		throw new IllegalArgumentException("Invalid option supplied.");
-	}
+public final class BankMessageHandler extends MessageHandler<ButtonMessage> {
 
 	/**
 	 * Creates the BankMessageHandler.
@@ -49,12 +26,64 @@ public final class BankMessageHandler extends MessageHandler<ItemActionMessage> 
 		super(world);
 	}
 
+	/**
+	 * Converts an inventory option to an amount.
+	 *
+	 * @param option        The option.
+	 * @param currentAmount The current amount.
+	 * @return The amount.
+	 * @throws IllegalArgumentException If the option is invalid.
+	 */
+	private static int inventoryOptionToAmount(int option, int currentAmount) {
+		switch (option) {
+			case 2:
+				return 1;
+			case 3:
+				return 5;
+			case 4:
+				return 10;
+			case 6:
+				return -1;
+			case 7:
+				return currentAmount;
+		}
+
+		throw new IllegalArgumentException("Invalid option supplied.");
+	}
+
+	/**
+	 * Converts an inventory option to an amount.
+	 *
+	 * @param option        The option.
+	 * @param currentAmount The current amount.
+	 * @return The amount.
+	 * @throws IllegalArgumentException If the option is invalid.
+	 */
+	private static int bankOptionToAmount(int option, int currentAmount) {
+		switch (option) {
+			case 1:
+				return 1;
+			case 2:
+				return 5;
+			case 3:
+				return 10;
+			case 5:
+				return -1;
+			case 6:
+				return currentAmount;
+			case 7:
+				return currentAmount - 1;
+		}
+
+		throw new IllegalArgumentException("Invalid option supplied.");
+	}
+
 	@Override
-	public void handle(Player player, ItemActionMessage message) {
-		if (player.getInterfaceSet().contains(BankConstants.BANK_WINDOW_ID)) {
-			if (message.getInterfaceId() == BankConstants.SIDEBAR_INVENTORY_ID) {
+	public void handle(Player player, ButtonMessage message) {
+		if (player.getInterfaceSet().contains(BankConstants.WINDOW_ID)) {
+			if (message.getInterfaceId() == BankConstants.SIDEBAR_ID) {
 				deposit(player, message);
-			} else if (message.getInterfaceId() == BankConstants.BANK_INVENTORY_ID) {
+			} else if (message.getInterfaceId() == BankConstants.WINDOW_ID) {
 				withdraw(player, message);
 			}
 		}
@@ -63,16 +92,19 @@ public final class BankMessageHandler extends MessageHandler<ItemActionMessage> 
 	/**
 	 * Handles a deposit action.
 	 *
-	 * @param player The player.
+	 * @param player  The player.
 	 * @param message The message.
 	 */
-	private void deposit(Player player, ItemActionMessage message) {
-		int amount = optionToAmount(message.getOption());
+	private void deposit(Player player, ButtonMessage message) {
+		int currentAmount = player.getInventory().get(message.getChildButton()).getAmount();
+		int amount = inventoryOptionToAmount(message.getIndex(), currentAmount);
 
 		if (amount == -1) {
-			EnterAmountListener listener = new BankDepositEnterAmountListener(player, message.getSlot(), message.getId());
+			EnterAmountListener listener = new BankDepositEnterAmountListener(player, message.getChildButton(),
+				message.getItemId());
+
 			player.getInterfaceSet().openEnterAmountDialogue(listener);
-		} else if (!BankUtils.deposit(player, message.getSlot(), message.getId(), amount)) {
+		} else if (!BankUtils.deposit(player, message.getChildButton(), message.getItemId(), amount)) {
 			message.terminate();
 		}
 	}
@@ -80,16 +112,19 @@ public final class BankMessageHandler extends MessageHandler<ItemActionMessage> 
 	/**
 	 * Handles a withdraw action.
 	 *
-	 * @param player The player.
+	 * @param player  The player.
 	 * @param message The message.
 	 */
-	private void withdraw(Player player, ItemActionMessage message) {
-		int amount = optionToAmount(message.getOption());
+	private void withdraw(Player player, ButtonMessage message) {
+		int currentAmount = player.getBank().get(message.getChildButton()).getAmount();
+		int amount = bankOptionToAmount(message.getIndex(), currentAmount);
 
 		if (amount == -1) {
-			EnterAmountListener listener = new BankWithdrawEnterAmountListener(player, message.getSlot(), message.getId());
+			EnterAmountListener listener = new BankWithdrawEnterAmountListener(player, message.getChildButton(),
+				message.getItemId());
+
 			player.getInterfaceSet().openEnterAmountDialogue(listener);
-		} else if (!BankUtils.withdraw(player, message.getSlot(), message.getId(), amount)) {
+		} else if (!BankUtils.withdraw(player, message.getChildButton(), message.getItemId(), amount)) {
 			message.terminate();
 		}
 	}

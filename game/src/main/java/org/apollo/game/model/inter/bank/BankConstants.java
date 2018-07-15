@@ -8,24 +8,29 @@ package org.apollo.game.model.inter.bank;
 public final class BankConstants {
 
 	/**
-	 * The bank inventory id.
-	 */
-	public static final int BANK_INVENTORY_ID = 5382;
-
-	/**
 	 * The bank window id.
 	 */
-	public static final int BANK_WINDOW_ID = 5292;
+	public static final int WINDOW_ID = 12;
 
 	/**
 	 * The sidebar id.
 	 */
-	public static final int SIDEBAR_ID = 2005;
+	public static final int SIDEBAR_ID = 15;
 
 	/**
-	 * The sidebar inventory id.
+	 * The bank interface id.
 	 */
-	public static final int SIDEBAR_INVENTORY_ID = 2006;
+	public static final int BANK_ID = -1;
+
+	/**
+	 * The bank interface child id.
+	 */
+	public static final int BANK_CHILD_ID = 64207;
+
+	/**
+	 * The bank interface type id.
+	 */
+	public static final int BANK_TYPE_ID = 95;
 
 	/**
 	 * Default private constructor to prevent instantiation.

@@ -34,8 +34,13 @@ public final class InterfaceSet {
 
 	static {
 		AttributeMap.define("selected_window_pane",
-			AttributeDefinition.forInt(WindowPane.SCREEN_FIXED.getIdentifier(), AttributePersistence.PERSISTENT));
+			AttributeDefinition.forInt(WindowPane.SCREEN_FIXED.getId(), AttributePersistence.PERSISTENT));
 	}
+
+	/**
+	 * The player whose interfaces are being managed.
+	 */
+	private final Player player; // TODO: maybe switch to a listener system like the inventory?
 
 	/**
 	 * The current enter amount listener.
@@ -51,11 +56,6 @@ public final class InterfaceSet {
 	 * The current listener.
 	 */
 	private InterfaceListener listener;
-
-	/**
-	 * The player whose interfaces are being managed.
-	 */
-	private final Player player; // TODO: maybe switch to a listener system like the inventory?
 
 	/**
 	 * Creates an interface set.
@@ -76,10 +76,14 @@ public final class InterfaceSet {
 	}
 
 	/**
-	 * Sent by the client when it has closed an interface.
+	 * Closes any interfaces in the chat box area.
 	 */
-	public void interfaceClosed() {
-		closeAndNotify();
+	public void closeDialogueInterface() {
+		if (interfaces.containsKey(InterfaceType.DIALOGUE)) {
+			interfaces.remove(InterfaceType.DIALOGUE);
+			closeInterface(ScreenArea.CHAT);
+		}
+		// TODO: Clear any input so it's empty next time we open it. CS2 necessary.
 	}
 
 	/**
@@ -88,8 +92,7 @@ public final class InterfaceSet {
 	public void closeSidebarInterface() {
 		if (interfaces.containsKey(InterfaceType.SIDEBAR)) {
 			interfaces.remove(InterfaceType.SIDEBAR);
-			player.send(new CloseInterfaceMessage(InterfaceConstants.DEFAULT_WINDOW_PANE,
-				InterfaceConstants.ScreenArea.SIDEBAR));
+			closeInterface(ScreenArea.SIDEBAR);
 		}
 	}
 
@@ -100,37 +103,57 @@ public final class InterfaceSet {
 		if (interfaces.containsKey(InterfaceType.WINDOW)) {
 			interfaces.remove(InterfaceType.WINDOW);
 			listener = null;
-			player.send(new CloseInterfaceMessage(InterfaceConstants.DEFAULT_WINDOW_PANE,
-				InterfaceConstants.ScreenArea.GAME));
+			closeInterface(ScreenArea.GAME);
 		}
 	}
 
 	/**
-	 * Closes any interfaces in the chat box area.
+	 * Checks if this interface sets contains the specified interface.
+	 *
+	 * @param id The interface's id.
+	 * @return {@code true} if so, {@code false} if not.
 	 */
-	public void closeDialogueInterface() {
-		if (interfaces.containsKey(InterfaceType.DIALOGUE)) {
-			interfaces.remove(InterfaceType.DIALOGUE);
-			player.send(new CloseInterfaceMessage(InterfaceConstants.DEFAULT_WINDOW_PANE,
-				InterfaceConstants.ScreenArea.CHAT));
+	public boolean contains(int id) {
+		return interfaces.containsValue(id);
+	}
+
+	/**
+	 * Checks if this interface set contains the specified interface type.
+	 *
+	 * @param type The interface's type.
+	 * @return {@code true} if so, {@code false} if not.
+	 */
+	public boolean contains(InterfaceType type) {
+		return interfaces.containsKey(type);
+	}
+
+	/**
+	 * Called when the client has entered the specified amount. Notifies the
+	 * current listener.
+	 *
+	 * @param amount The amount.
+	 */
+	public void enteredAmount(int amount) {
+		if (amountListener != null) {
+			amountListener.amountEntered(amount);
+			amountListener = null;
 		}
-		// TODO: Clear any input so it's empty next time we open it. CS2 necessary.
 	}
 
 	/**
-	 * Opens a sidebar interface.
+	 * Gets the interface map.
+	 *
+	 * @return the interface map
 	 */
-	public void openSidebarInterface(int interfaceId) {
-		interfaces.put(InterfaceType.SIDEBAR, interfaceId);
-		player.send(new OpenInterfaceMessage(InterfaceConstants.ScreenArea.SIDEBAR.getId(),
-			InterfaceConstants.DEFAULT_WINDOW_PANE, interfaceId));
+	public Map<InterfaceType, Integer> getInterfaces() {
+		return interfaces;
 	}
 
 	/**
-	 * Sends a sidebar interface.
+	 * Sent by the client when it has closed an interface.
 	 */
-	public void sendUserInterface(int layer, int interfaceId) {
-		player.send(new OpenInterfaceMessage(layer, InterfaceConstants.DEFAULT_WINDOW_PANE, interfaceId, true));
+	public void interfaceClosed() {
+		closeAndNotify();
 	}
 
 	/**
@@ -140,23 +163,7 @@ public final class InterfaceSet {
 	 */
 	public void openDialogueInterface(int interfaceId) {
 		interfaces.put(InterfaceType.DIALOGUE, interfaceId);
-		player.send(new OpenInterfaceMessage(InterfaceConstants.ScreenArea.CHAT.getId(),
-			InterfaceConstants.DEFAULT_WINDOW_PANE, interfaceId));
-	}
-
-	/**
-	 * Sends the default user interfaces.
-	 */
-	public void sendDefaultUserInterfaces() {
-		Number windowPaneIdentifier = (Number) player.getAttribute("selected_window_pane").getValue();
-		WindowPane windowPane = WindowPane.valueOf(windowPaneIdentifier.intValue());
-		openWindowPane(windowPane.getIdentifier());
-
-		Arrays.stream(InterfaceConstants.UserInterface.values())
-			.filter(ui -> ui.getWindowId() == windowPane.getIdentifier())
-			.forEach(ui -> {
-				player.send(new OpenInterfaceMessage(ui.getLayer(), ui.getWindowId(), ui.getInterfaceId(), true));
-			});
+		sendInterface(ScreenArea.CHAT, interfaceId);
 	}
 
 	/**
@@ -169,6 +176,48 @@ public final class InterfaceSet {
 
 		//TODO: Re-add this later.
 //        player.send(new RunClientScriptEvent(108, new Object[]{"Enter amount:"}, "s"));
+	}
+
+	/**
+	 * Opens a sidebar interface.
+	 */
+	public void openSidebarInterface(int interfaceId) {
+		interfaces.put(InterfaceType.SIDEBAR, interfaceId);
+		sendInterface(ScreenArea.SIDEBAR, interfaceId);
+	}
+
+	/**
+	 * Opens a window interface with no listener in the default root window.
+	 *
+	 * @param windowId The window's id.
+	 */
+	public void openWindow(int windowId) {
+		openWindow(null, windowId);
+	}
+
+	/**
+	 * Opens a window interface with the specified listener in the default root
+	 * window.
+	 *
+	 * @param listener The listener for this interface.
+	 * @param windowId The window's id.
+	 */
+	public void openWindow(InterfaceListener listener, int windowId) {
+		closeAndNotify();
+		this.listener = listener;
+
+		interfaces.put(InterfaceType.WINDOW, windowId);
+		sendInterface(ScreenArea.GAME, windowId);
+	}
+
+	/**
+	 * Opens a window pane.
+	 *
+	 * @param windowPaneId The window pane's id.
+	 */
+	public void openWindowPane(int windowPaneId) {
+		interfaces.put(InterfaceType.WINDOW_PANE, windowPaneId);
+		player.send(new SendWindowPaneMessage(windowPaneId));
 	}
 
 	/**
@@ -194,67 +243,26 @@ public final class InterfaceSet {
 	}
 
 	/**
-	 * Opens a window pane.
-	 *
-	 * @param windowPaneId The window pane's id.
+	 * Sends the default user interfaces.
 	 */
-	public void openWindowPane(int windowPaneId) {
-		interfaces.put(InterfaceType.WINDOW_PANE, windowPaneId);
-		player.send(new SendWindowPaneMessage(windowPaneId));
+	public void sendDefaultUserInterfaces() {
+		WindowPane windowPane = getWindowPane();
+		openWindowPane(windowPane.getId());
+
+		Arrays.stream(InterfaceConstants.UserInterface.values())
+			.filter(ui -> ui.getWindowId() == windowPane.getId())
+			.forEach(ui -> {
+				player.send(new OpenInterfaceMessage(ui.getWindowId(), ui.getLayer(), ui.getInterfaceId(), true));
+			});
 	}
 
 	/**
-	 * Opens a window interface with no listener in the default root window.
+	 * Gets the size of the interface set.
 	 *
-	 * @param windowId The window's id.
+	 * @return The size.
 	 */
-	public void openWindow(int windowId) {
-		openWindow(null, windowId);
-	}
-
-	/**
-	 * Opens a window interface with the specified listener in the default root
-	 * window.
-	 *
-	 * @param listener The listener for this interface.
-	 * @param windowId The window's id.
-	 */
-	public void openWindow(InterfaceListener listener, int windowId) {
-		closeAndNotify();
-		this.listener = listener;
-
-		interfaces.put(InterfaceType.WINDOW, windowId);
-		player.send(new OpenInterfaceMessage(InterfaceConstants.ScreenArea.GAME.getId(),
-			InterfaceConstants.DEFAULT_WINDOW_PANE, windowId));
-	}
-
-	/**
-	 * Gets the interface map.
-	 *
-	 * @return the interface map
-	 */
-	public Map<InterfaceType, Integer> getInterfaces() {
-		return interfaces;
-	}
-
-	/**
-	 * Checks if this interface sets contains the specified interface.
-	 *
-	 * @param id The interface's id.
-	 * @return {@code true} if so, {@code false} if not.
-	 */
-	public boolean contains(int id) {
-		return interfaces.containsValue(id);
-	}
-
-	/**
-	 * Checks if this interface set contains the specified interface type.
-	 *
-	 * @param type The interface's type.
-	 * @return {@code true} if so, {@code false} if not.
-	 */
-	public boolean contains(InterfaceType type) {
-		return interfaces.containsKey(type);
+	public int size() {
+		return interfaces.size();
 	}
 
 	/**
@@ -272,24 +280,38 @@ public final class InterfaceSet {
 	}
 
 	/**
-	 * Called when the client has entered the specified amount. Notifies the
-	 * current listener.
+	 * Closes an interface, given the screen area.
 	 *
-	 * @param amount The amount.
+	 * @param screenArea The screen area.
 	 */
-	public void enteredAmount(int amount) {
-		if (amountListener != null) {
-			amountListener.amountEntered(amount);
-			amountListener = null;
-		}
+	private void closeInterface(ScreenArea screenArea) {
+		player.send(new CloseInterfaceMessage(getWindowPane(), screenArea));
 	}
 
 	/**
-	 * Gets the size of the interface set.
+	 * Gets the user's currently configured window pane.
 	 *
-	 * @return The size.
+	 * @return The window pane.
 	 */
-	public int size() {
-		return interfaces.size();
+	private WindowPane getWindowPane() {
+		Number windowPaneIdentifier = (Number) player.getAttribute("selected_window_pane").getValue();
+
+		return WindowPane.valueOf(windowPaneIdentifier.intValue());
+	}
+
+	/**
+	 * Sends an interface.
+	 */
+	private void sendInterface(ScreenArea screenArea, int interfaceId) {
+		WindowPane windowPane = getWindowPane();
+		player.send(new OpenInterfaceMessage(windowPane.getId(), screenArea.getId(windowPane), interfaceId, false));
+	}
+
+	/**
+	 * Sends a walkable interface.
+	 */
+	private void sendWalkableInterface(ScreenArea screenArea, int interfaceId) {
+		WindowPane windowPane = getWindowPane();
+		player.send(new OpenInterfaceMessage(windowPane.getId(), screenArea.getId(windowPane), interfaceId, true));
 	}
 }

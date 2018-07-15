@@ -1,6 +1,6 @@
 package org.apollo.game.message.handler;
 
-import org.apollo.game.message.impl.ItemActionMessage;
+import org.apollo.game.message.impl.ButtonMessage;
 import org.apollo.game.model.Item;
 import org.apollo.game.model.World;
 import org.apollo.game.model.entity.Player;
@@ -13,24 +13,24 @@ import org.apollo.game.model.inv.SynchronizationInventoryListener;
  * @author Graham
  * @author Major
  */
-public final class RemoveEquippedItemHandler extends MessageHandler<ItemActionMessage> {
+public final class RemoveEquippedItemHandler extends MessageHandler<ButtonMessage> {
 
 	/**
 	 * Creates the RemoveEquippedItemHandler.
 	 *
-	 * @param world The {@link World} the {@link ItemActionMessage} occurred in.
+	 * @param world The {@link World} the {@link ButtonMessage} occurred in.
 	 */
 	public RemoveEquippedItemHandler(World world) {
 		super(world);
 	}
 
 	@Override
-	public void handle(Player player, ItemActionMessage message) {
-		if (message.getOption() == 1 && message.getInterfaceId() == SynchronizationInventoryListener.EQUIPMENT_ID) {
+	public void handle(Player player, ButtonMessage message) {
+		if (message.getIndex() == 1 && message.getInterfaceId() == SynchronizationInventoryListener.EQUIPMENT_ID) {
 			Inventory inventory = player.getInventory();
 			Inventory equipment = player.getEquipment();
 
-			int slot = message.getSlot();
+			int slot = message.getChildButton();
 			Item item = equipment.get(slot);
 			int id = item.getId();
 

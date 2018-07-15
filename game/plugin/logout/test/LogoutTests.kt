@@ -15,7 +15,7 @@ class LogoutTests : KotlinPluginTest() {
 
 	@Test
     fun `The player should be logged out when they click the logout button`() {
-		player.notify(ButtonMessage(LOGOUT_INTERFACE_ID, LOGOUT_BUTTON_ID, LOGIN_CHILD_BUTTON_ID))
+		player.notify(ButtonMessage(index, LOGOUT_INTERFACE_ID, LOGOUT_BUTTON_ID, LOGIN_CHILD_BUTTON_ID, itemId))
 
 		verify(player, times(1)).logout()
 	}

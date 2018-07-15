@@ -27,11 +27,11 @@ public final class ScreenResizeMessageHandler extends MessageHandler<ScreenResiz
 
 		if(message.getMode() == 1) {
 			player.setAttribute("selected_window_pane",
-				new NumericalAttribute(WindowPane.SCREEN_FIXED.getIdentifier()));
+				new NumericalAttribute(WindowPane.SCREEN_FIXED.getId()));
 
 		} else if(message.getMode() == 2) {
 			player.setAttribute("selected_window_pane",
-				new NumericalAttribute(WindowPane.SCREEN_RESIZE.getIdentifier()));
+				new NumericalAttribute(WindowPane.SCREEN_RESIZE.getId()));
 		}
 
 		player.getInterfaceSet().sendDefaultUserInterfaces();

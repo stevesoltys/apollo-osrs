@@ -22,14 +22,13 @@ public enum WindowPane {
 	 */
 	SCREEN_REARRANGED(164);
 
+	/**
+	 * The interface identifier.
+	 */
 	private final int identifier;
 
 	WindowPane(int identifier) {
 		this.identifier = identifier;
-	}
-
-	public int getIdentifier() {
-		return identifier;
 	}
 
 	/**
@@ -42,7 +41,11 @@ public enum WindowPane {
 	public static WindowPane valueOf(int identifier) {
 		return Arrays.stream(values())
 			.filter(status -> status.identifier == identifier)
-			.findAny().orElseThrow(() -> new IllegalArgumentException("Illegal window identifier."));
+			.findAny().orElseThrow(() -> new IllegalArgumentException("Illegal window pane identifier."));
+	}
+
+	public int getId() {
+		return identifier;
 	}
 
 }

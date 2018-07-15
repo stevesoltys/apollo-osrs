@@ -30,13 +30,13 @@ public final class NumericalAttribute extends Attribute<Number> {
 
 	@Override
 	public byte[] encode() {
-		long encoded = type == AttributeType.DOUBLE ? Double.doubleToLongBits((double) value) : value.longValue();
+		long encoded = type == AttributeType.DOUBLE ? Double.doubleToLongBits(value.doubleValue()) : value.longValue();
 		return Longs.toByteArray(encoded);
 	}
 
 	@Override
 	public String toString() {
-		return type == AttributeType.DOUBLE ? Double.toString((double) value) : Long.toString(value.longValue());
+		return type == AttributeType.DOUBLE ? Double.toString(value.doubleValue()) : Long.toString(value.longValue());
 	}
 
 }

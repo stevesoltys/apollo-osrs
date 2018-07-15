@@ -9,7 +9,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import org.apollo.cache.IndexedFileSystem;
 import org.apollo.game.model.World;
 import org.apollo.game.plugin.PluginContext;
 import org.apollo.game.plugin.PluginManager;

@@ -8,13 +8,12 @@ import org.apollo.game.model.entity.Player;
 import org.apollo.game.model.inter.bank.BankConstants;
 import org.apollo.game.model.inv.Inventory;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 @RunWith(PowerMockRunner.class)
@@ -39,8 +38,8 @@ public final class ItemOnItemVerificationHandlerTests {
 
 		when(player.getInventory()).thenReturn(inventory);
 
-		ItemOnItemMessage itemOnItemMessage = new ItemOnItemMessage(BankConstants.SIDEBAR_INVENTORY_ID, 4151, 1,
-				BankConstants.SIDEBAR_INVENTORY_ID, 4152, 2);
+		ItemOnItemMessage itemOnItemMessage = new ItemOnItemMessage(BankConstants.SIDEBAR_ID, 4151, 1,
+				BankConstants.SIDEBAR_ID, 4152, 2);
 
 		itemOnItemVerificationHandler.handle(player, itemOnItemMessage);
 

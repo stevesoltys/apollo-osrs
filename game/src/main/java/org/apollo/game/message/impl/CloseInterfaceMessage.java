@@ -1,6 +1,7 @@
 package org.apollo.game.message.impl;
 
-import org.apollo.game.model.inter.InterfaceConstants;
+import org.apollo.game.model.inter.ScreenArea;
+import org.apollo.game.model.inter.WindowPane;
 import org.apollo.net.message.Message;
 
 /**
@@ -10,11 +11,11 @@ import org.apollo.net.message.Message;
  */
 public final class CloseInterfaceMessage extends Message {
 
-	private int windowPane;
+	private WindowPane windowPane;
 
-	private InterfaceConstants.ScreenArea area;
+	private ScreenArea area;
 
-	public CloseInterfaceMessage(int windowPane, InterfaceConstants.ScreenArea area) {
+	public CloseInterfaceMessage(WindowPane windowPane, ScreenArea area) {
 		this.windowPane = windowPane;
 		this.area = area;
 	}
@@ -22,11 +23,11 @@ public final class CloseInterfaceMessage extends Message {
 	public CloseInterfaceMessage() {
 	}
 
-	public int getWindowPane() {
+	public WindowPane getWindowPane() {
 		return windowPane;
 	}
 
-	public InterfaceConstants.ScreenArea getArea() {
+	public ScreenArea getArea() {
 		return area;
 	}
 }

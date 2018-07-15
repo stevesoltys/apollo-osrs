@@ -17,8 +17,6 @@ public class RegionChangeMessageEncoder extends MessageEncoder<RegionChangeMessa
 		GamePacketBuilder builder = new GamePacketBuilder(133, PacketType.VARIABLE_SHORT);
 		Position pos = message.getPosition();
 
-		int regionChunkX = pos.getTopLeftRegionX();
-		int regionChunkY = pos.getTopLeftRegionY();
 		int regionX = pos.getCentralRegionX();
 		int regionY = pos.getCentralRegionY();
 

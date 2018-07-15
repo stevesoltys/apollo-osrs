@@ -59,147 +59,109 @@ public final class Player extends Mob {
 	}
 
 	/**
-	 * Generates the next appearance ticket.
-	 *
-	 * @return The next available appearance ticket.
-	 */
-	private static int nextAppearanceTicket() {
-		if (appearanceTicketCounter.incrementAndGet() == 0) {
-			appearanceTicketCounter.set(1);
-		}
-		return appearanceTicketCounter.get();
-	}
-
-	/**
 	 * This appearance tickets for this Player.
 	 */
 	private final int[] appearanceTickets = new int[WorldConstants.MAXIMUM_PLAYERS];
-
 	/**
 	 * This player's bank.
 	 */
 	private final Inventory bank = new Inventory(InventoryConstants.BANK_CAPACITY, StackMode.STACK_ALWAYS);
-
 	/**
 	 * This player's credentials.
 	 */
 	private final PlayerCredentials credentials;
-
 	/**
 	 * This player's interface set.
 	 */
 	private final InterfaceSet interfaceSet = new InterfaceSet(this);
-
 	/**
 	 * The Set of DynamicGameObjects that are visible to this Player.
 	 */
 	private final Set<DynamicGameObject> localObjects = new HashSet<>();
-
 	/**
 	 * A temporary queue of messages sent during the login process.
 	 */
 	private final Deque<Message> queuedMessages = new ArrayDeque<>();
-
 	/**
 	 * The player's appearance.
 	 */
 	private Appearance appearance = Appearance.DEFAULT_APPEARANCE;
-
 	/**
 	 * This Players appearance ticket.
 	 */
 	private int appearanceTicket = nextAppearanceTicket();
-
 	/**
 	 * The privacy state of this player's public chat.
 	 */
 	private PrivacyState chatPrivacy = PrivacyState.ON;
-
 	/**
 	 * A flag which indicates there are npcs that couldn't be added.
 	 */
 	private boolean excessiveNpcs;
-
 	/**
 	 * A flag which indicates there are players that couldn't be added.
 	 */
 	private boolean excessivePlayers;
-
 	/**
 	 * The privacy state of this player's private chat.
 	 */
 	private PrivacyState friendPrivacy = PrivacyState.ON;
-
 	/**
 	 * The list of usernames of players this player has befriended.
 	 */
 	private List<String> friends = new ArrayList<>();
-
 	/**
 	 * The list of usernames of players this player has ignored.
 	 */
 	private List<String> ignores = new ArrayList<>();
-
 	/**
 	 * Whether or not the player is skulled.
 	 */
 	private boolean isSkulled;
-
 	/**
 	 * The centre of the last region the client has loaded.
 	 */
 	private Position lastKnownRegion;
-
 	/**
 	 * The MembershipStatus of this Player.
 	 */
 	private MembershipStatus members = MembershipStatus.FREE;
-
 	/**
 	 * This player's prayer icon.
 	 */
 	private int prayerIcon = -1;
-
 	/**
 	 * The privilege level.
 	 */
 	private PrivilegeLevel privilegeLevel = PrivilegeLevel.STANDARD;
-
 	/**
 	 * A flag indicating if the region changed in the last cycle.
 	 */
 	private boolean regionChanged;
-
 	/**
 	 * A flag indicating if this player is running.
 	 */
 	private boolean running;
-
 	/**
 	 * The brightness of this player's screen.
 	 */
 	private ScreenBrightness screenBrightness = ScreenBrightness.NORMAL;
-
 	/**
 	 * The {@link GameSession} currently attached to this Player.
 	 */
 	private GameSession session;
-
 	/**
 	 * The privacy state of this player's trade chat.
 	 */
 	private PrivacyState tradePrivacy = PrivacyState.ON;
-
 	/**
 	 * The current maximum viewing distance of this Player.
 	 */
 	private int viewingDistance = DEFAULT_VIEWING_DISTANCE;
-
 	/**
 	 * A flag indicating if the player is withdrawing items as notes.
 	 */
 	private boolean withdrawingNotes;
-
 	/**
 	 * The world id of this Player.
 	 */
@@ -217,6 +179,18 @@ public final class Player extends Mob {
 		this.credentials = credentials;
 
 		init();
+	}
+
+	/**
+	 * Generates the next appearance ticket.
+	 *
+	 * @return The next available appearance ticket.
+	 */
+	private static int nextAppearanceTicket() {
+		if (appearanceTicketCounter.incrementAndGet() == 0) {
+			appearanceTicketCounter.set(1);
+		}
+		return appearanceTicketCounter.get();
 	}
 
 	/**
@@ -246,6 +220,13 @@ public final class Player extends Mob {
 	public void addObject(DynamicGameObject object) {
 		localObjects.add(object);
 		object.addTo(this);
+	}
+
+	/**
+	 * Ban the player.
+	 */
+	public void ban() {
+		attributes.set("banned", new BooleanAttribute(true));
 	}
 
 	/**
@@ -303,6 +284,16 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the player's appearance.
+	 *
+	 * @param appearance The new appearance.
+	 */
+	public void setAppearance(Appearance appearance) {
+		this.appearance = appearance;
+		updateAppearance();
+	}
+
+	/**
 	 * Gets this Players appearance ticket.
 	 *
 	 * @return This Players appearance ticket.
@@ -339,6 +330,15 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the chat {@link PrivacyState}.
+	 *
+	 * @param chatPrivacy The privacy state.
+	 */
+	public void setChatPrivacy(PrivacyState chatPrivacy) {
+		this.chatPrivacy = chatPrivacy;
+	}
+
+	/**
 	 * Gets the player's credentials.
 	 *
 	 * @return The player's credentials.
@@ -371,6 +371,15 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the friend {@link PrivacyState}.
+	 *
+	 * @param friendPrivacy The privacy state.
+	 */
+	public void setFriendPrivacy(PrivacyState friendPrivacy) {
+		this.friendPrivacy = friendPrivacy;
+	}
+
+	/**
 	 * Gets the {@link List} of this player's friends.
 	 *
 	 * @return The list.
@@ -380,12 +389,30 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the {@link List} of this player's friends.
+	 *
+	 * @param friends The friends.
+	 */
+	public void setFriendUsernames(List<String> friends) {
+		this.friends = friends;
+	}
+
+	/**
 	 * Gets the {@link List} of usernames of ignored players.
 	 *
 	 * @return The list.
 	 */
 	public List<String> getIgnoredUsernames() {
 		return ignores;
+	}
+
+	/**
+	 * Sets the {@link List} of this player's ignored players.
+	 *
+	 * @param ignores The ignored player list.
+	 */
+	public void setIgnoredUsernames(List<String> ignores) {
+		this.ignores = ignores;
 	}
 
 	@Override
@@ -413,6 +440,15 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the last known region.
+	 *
+	 * @param lastKnownRegion The last known region.
+	 */
+	public void setLastKnownRegion(Position lastKnownRegion) {
+		this.lastKnownRegion = lastKnownRegion;
+	}
+
+	/**
 	 * Gets the {@link MembershipStatus} of this Player.
 	 *
 	 * @return The MembershipStatus.
@@ -431,12 +467,30 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the player's prayer icon. TODO make this an attribute?
+	 *
+	 * @param prayerIcon The prayer icon.
+	 */
+	public void setPrayerIcon(int prayerIcon) {
+		this.prayerIcon = prayerIcon;
+	}
+
+	/**
 	 * Gets the privilege level.
 	 *
 	 * @return The privilege level.
 	 */
 	public PrivilegeLevel getPrivilegeLevel() {
 		return privilegeLevel;
+	}
+
+	/**
+	 * Sets the privilege level.
+	 *
+	 * @param privilegeLevel The privilege level.
+	 */
+	public void setPrivilegeLevel(PrivilegeLevel privilegeLevel) {
+		this.privilegeLevel = privilegeLevel;
 	}
 
 	/**
@@ -450,12 +504,31 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the player's run energy.
+	 *
+	 * @param energy The energy.
+	 */
+	public void setRunEnergy(int energy) {
+		attributes.set("run_energy", new NumericalAttribute(energy));
+		send(new UpdateRunEnergyMessage(energy));
+	}
+
+	/**
 	 * Gets this player's {@link ScreenBrightness}.
 	 *
 	 * @return The screen brightness.
 	 */
 	public ScreenBrightness getScreenBrightness() {
 		return screenBrightness;
+	}
+
+	/**
+	 * Sets the {@link ScreenBrightness} of this player.
+	 *
+	 * @param brightness The screen brightness.
+	 */
+	public void setScreenBrightness(ScreenBrightness brightness) {
+		screenBrightness = brightness;
 	}
 
 	/**
@@ -468,12 +541,30 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets the player's {@link GameSession}.
+	 *
+	 * @param session The player's {@link GameSession}.
+	 */
+	public void setSession(GameSession session) {
+		this.session = session;
+	}
+
+	/**
 	 * Gets this player's trade {@link PrivacyState}.
 	 *
 	 * @return The privacy state.
 	 */
 	public PrivacyState getTradePrivacy() {
 		return tradePrivacy;
+	}
+
+	/**
+	 * Sets the trade {@link PrivacyState}.
+	 *
+	 * @param tradePrivacy The privacy state.
+	 */
+	public void setTradePrivacy(PrivacyState tradePrivacy) {
+		this.tradePrivacy = tradePrivacy;
 	}
 
 	/**
@@ -583,11 +674,29 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Changes the membership status of this player.
+	 *
+	 * @param members The new membership flag.
+	 */
+	public void setMembers(MembershipStatus members) {
+		this.members = members;
+	}
+
+	/**
 	 * Returns if this player is muted or not.
 	 */
 	public boolean isMuted() {
 		Attribute<Boolean> muted = attributes.get("muted");
 		return muted.getValue();
+	}
+
+	/**
+	 * Sets the mute status of a player.
+	 *
+	 * @param muted Whether the player is muted.
+	 */
+	public void setMuted(boolean muted) {
+		attributes.set("muted", new BooleanAttribute(muted));
 	}
 
 	/**
@@ -609,6 +718,15 @@ public final class Player extends Mob {
 	}
 
 	/**
+	 * Sets whether or not the player is skulled. TODO make this an attribute
+	 *
+	 * @param isSkulled Whether or not the player is skulled.
+	 */
+	public void setSkulled(boolean isSkulled) {
+		this.isSkulled = isSkulled;
+	}
+
+	/**
 	 * Checks if this player is withdrawing noted items.
 	 *
 	 * @return {@code true} if the player is currently withdrawing notes,
@@ -616,6 +734,16 @@ public final class Player extends Mob {
 	 */
 	public boolean isWithdrawingNotes() {
 		return withdrawingNotes;
+	}
+
+	/**
+	 * Sets whether or not the player is withdrawing notes from the bank.
+	 *
+	 * @param withdrawingNotes Whether or not the player is withdrawing noted
+	 *                         items.
+	 */
+	public void setWithdrawingNotes(boolean withdrawingNotes) {
+		this.withdrawingNotes = withdrawingNotes;
 	}
 
 	/**
@@ -633,8 +761,9 @@ public final class Player extends Mob {
 	 * Opens this player's bank.
 	 */
 	public void openBank() {
-		InventoryListener invListener = new SynchronizationInventoryListener(this, BankConstants.SIDEBAR_INVENTORY_ID);
-		InventoryListener bankListener = new SynchronizationInventoryListener(this, BankConstants.BANK_INVENTORY_ID);
+		InventoryListener invListener = new SynchronizationInventoryListener(this, -1, 64209, 93);
+		InventoryListener bankListener = new SynchronizationInventoryListener(this,
+			BankConstants.BANK_ID, BankConstants.BANK_CHILD_ID, BankConstants.BANK_TYPE_ID);
 
 		inventory.addListener(invListener);
 		bank.addListener(bankListener);
@@ -642,7 +771,18 @@ public final class Player extends Mob {
 		bank.forceRefresh();
 
 		InterfaceListener interListener = new BankInterfaceListener(this, invListener, bankListener);
-		interfaceSet.openWindowWithSidebar(interListener, BankConstants.BANK_WINDOW_ID, BankConstants.SIDEBAR_ID);
+		interfaceSet.openWindowWithSidebar(interListener, BankConstants.WINDOW_ID, BankConstants.SIDEBAR_ID);
+
+
+		send(new AccessMaskMessage(0, 799, 1311998, 12 << 16 | 12));
+		send(new AccessMaskMessage(809, 817, 2, 12 << 16 | 12));
+		send(new AccessMaskMessage(818, 827, 1048576, 12 << 16 | 12));
+		send(new AccessMaskMessage(10, 10, 1048578, 12 << 16 | 10));
+		send(new AccessMaskMessage(11, 19, 1179714, 12 << 16 | 10));
+		send(new AccessMaskMessage(0, 27, 1181438, 15 << 16 | 3));
+		send(new AccessMaskMessage(0, 27, 1054, 15 << 16 | 12));
+		send(new AccessMaskMessage(0, 3, 2, 12 << 16 | 32));
+		send(new AccessMaskMessage(0, 27, 1054, 15 << 16 | 10));
 	}
 
 	/**
@@ -727,7 +867,7 @@ public final class Player extends Mob {
 
 		inventory.forceRefresh();
 		equipment.forceRefresh();
-//		bank.forceRefresh();
+		bank.forceRefresh();
 		skillSet.forceRefresh();
 
 		world.submit(new LoginEvent(this));
@@ -772,166 +912,12 @@ public final class Player extends Mob {
 	}
 
 	/**
-	 * Sets the player's appearance.
-	 *
-	 * @param appearance The new appearance.
-	 */
-	public void setAppearance(Appearance appearance) {
-		this.appearance = appearance;
-		updateAppearance();
-	}
-
-	/**
-	 * Sets the chat {@link PrivacyState}.
-	 *
-	 * @param chatPrivacy The privacy state.
-	 */
-	public void setChatPrivacy(PrivacyState chatPrivacy) {
-		this.chatPrivacy = chatPrivacy;
-	}
-
-	/**
-	 * Sets the friend {@link PrivacyState}.
-	 *
-	 * @param friendPrivacy The privacy state.
-	 */
-	public void setFriendPrivacy(PrivacyState friendPrivacy) {
-		this.friendPrivacy = friendPrivacy;
-	}
-
-	/**
-	 * Sets the {@link List} of this player's friends.
-	 *
-	 * @param friends The friends.
-	 */
-	public void setFriendUsernames(List<String> friends) {
-		this.friends = friends;
-	}
-
-	/**
-	 * Sets the {@link List} of this player's ignored players.
-	 *
-	 * @param ignores The ignored player list.
-	 */
-	public void setIgnoredUsernames(List<String> ignores) {
-		this.ignores = ignores;
-	}
-
-	/**
-	 * Sets the last known region.
-	 *
-	 * @param lastKnownRegion The last known region.
-	 */
-	public void setLastKnownRegion(Position lastKnownRegion) {
-		this.lastKnownRegion = lastKnownRegion;
-	}
-
-	/**
-	 * Changes the membership status of this player.
-	 *
-	 * @param members The new membership flag.
-	 */
-	public void setMembers(MembershipStatus members) {
-		this.members = members;
-	}
-
-	/**
-	 * Sets the player's prayer icon. TODO make this an attribute?
-	 *
-	 * @param prayerIcon The prayer icon.
-	 */
-	public void setPrayerIcon(int prayerIcon) {
-		this.prayerIcon = prayerIcon;
-	}
-
-	/**
-	 * Sets the privilege level.
-	 *
-	 * @param privilegeLevel The privilege level.
-	 */
-	public void setPrivilegeLevel(PrivilegeLevel privilegeLevel) {
-		this.privilegeLevel = privilegeLevel;
-	}
-
-	/**
 	 * Sets the region changed flag.
 	 *
 	 * @param regionChanged Whether or not the region has changed.
 	 */
 	public void setRegionChanged(boolean regionChanged) {
 		this.regionChanged = regionChanged;
-	}
-
-	/**
-	 * Sets the player's run energy.
-	 *
-	 * @param energy The energy.
-	 */
-	public void setRunEnergy(int energy) {
-		attributes.set("run_energy", new NumericalAttribute(energy));
-		send(new UpdateRunEnergyMessage(energy));
-	}
-
-	/**
-	 * Sets the {@link ScreenBrightness} of this player.
-	 *
-	 * @param brightness The screen brightness.
-	 */
-	public void setScreenBrightness(ScreenBrightness brightness) {
-		screenBrightness = brightness;
-	}
-
-	/**
-	 * Sets the player's {@link GameSession}.
-	 *
-	 * @param session The player's {@link GameSession}.
-	 */
-	public void setSession(GameSession session) {
-		this.session = session;
-	}
-
-	/**
-	 * Sets whether or not the player is skulled. TODO make this an attribute
-	 *
-	 * @param isSkulled Whether or not the player is skulled.
-	 */
-	public void setSkulled(boolean isSkulled) {
-		this.isSkulled = isSkulled;
-	}
-
-	/**
-	 * Sets the trade {@link PrivacyState}.
-	 *
-	 * @param tradePrivacy The privacy state.
-	 */
-	public void setTradePrivacy(PrivacyState tradePrivacy) {
-		this.tradePrivacy = tradePrivacy;
-	}
-
-	/**
-	 * Sets whether or not the player is withdrawing notes from the bank.
-	 *
-	 * @param withdrawingNotes Whether or not the player is withdrawing noted
-	 *                         items.
-	 */
-	public void setWithdrawingNotes(boolean withdrawingNotes) {
-		this.withdrawingNotes = withdrawingNotes;
-	}
-
-	/**
-	 * Ban the player.
-	 */
-	public void ban() {
-		attributes.set("banned", new BooleanAttribute(true));
-	}
-
-	/**
-	 * Sets the mute status of a player.
-	 *
-	 * @param muted Whether the player is muted.
-	 */
-	public void setMuted(boolean muted) {
-		attributes.set("muted", new BooleanAttribute(muted));
 	}
 
 	@Override
@@ -995,15 +981,16 @@ public final class Player extends Mob {
 			SynchronizationInventoryListener.INVENTORY_TYPE_ID);
 
 		InventoryListener syncBankListener = new SynchronizationInventoryListener(this,
-			BankConstants.BANK_INVENTORY_ID);
+			BankConstants.BANK_ID, BankConstants.BANK_CHILD_ID, BankConstants.BANK_TYPE_ID);
+
 		InventoryListener syncEquipmentListener = new SynchronizationInventoryListener(this,
 			SynchronizationInventoryListener.EQUIPMENT_ID, SynchronizationInventoryListener.EQUIPMENT_CHILD_ID,
 			SynchronizationInventoryListener.EQUIPMENT_TYPE_ID);
 
 		inventory.addListener(syncInventoryListener);
 		inventory.addListener(fullInventoryListener);
-//		bank.addListener(syncBankListener);
-//		bank.addListener(fullBankListener);
+		bank.addListener(syncBankListener);
+		bank.addListener(fullBankListener);
 		equipment.addListener(syncEquipmentListener);
 		equipment.addListener(appearanceListener);
 	}

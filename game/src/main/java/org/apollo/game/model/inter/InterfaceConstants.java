@@ -8,32 +8,6 @@ package org.apollo.game.model.inter;
 public class InterfaceConstants {
 
 	/**
-	 * The default root window id.
-	 */
-	public static final int DEFAULT_WINDOW_PANE = 164;
-
-	/**
-	 * A certain area of the game screen.
-	 * <p>
-	 * Note that this is used to specify where an interface is to be created or changed.
-	 */
-	public enum ScreenArea {
-
-		GAME(75),
-		SIDEBAR(97),
-		CHAT(92);
-		private int id;
-
-		ScreenArea(int id) {
-			this.id = id;
-		}
-
-		public int getId() {
-			return id;
-		}
-	}
-
-	/**
 	 * The layer and interface ids of the side bar tabs.
 	 * Interesting note - the layers are also considered screen areas.
 	 */
