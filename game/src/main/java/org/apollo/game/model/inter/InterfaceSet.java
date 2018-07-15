@@ -1,6 +1,7 @@
 package org.apollo.game.model.inter;
 
 import org.apollo.game.message.impl.CloseInterfaceMessage;
+import org.apollo.game.message.impl.EnterAmountMessage;
 import org.apollo.game.message.impl.OpenInterfaceMessage;
 import org.apollo.game.message.impl.SendWindowPaneMessage;
 import org.apollo.game.model.entity.Player;
@@ -174,8 +175,7 @@ public final class InterfaceSet {
 	public void openEnterAmountDialogue(EnterAmountListener listener) {
 		this.amountListener = listener;
 
-		//TODO: Re-add this later.
-//        player.send(new RunClientScriptEvent(108, new Object[]{"Enter amount:"}, "s"));
+		player.send(new EnterAmountMessage());
 	}
 
 	/**

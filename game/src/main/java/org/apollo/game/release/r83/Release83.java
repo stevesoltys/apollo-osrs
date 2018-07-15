@@ -112,6 +112,7 @@ public class Release83 extends Release {
 		register(UpdateItemsMessage.class, new UpdateItemsMessageEncoder());
 		register(UpdateRunEnergyMessage.class, new UpdateRunEnergyEncoder());
 		register(ServerChatMessage.class, new ServerMessageMessageEncoder());
+		register(EnterAmountMessage.class, new EnterAmountMessageEncoder());
 
 		WalkMessageDecoder walkingDecoder = new WalkMessageDecoder();
 		register(177, walkingDecoder);
@@ -123,6 +124,9 @@ public class Release83 extends Release {
 
 		ItemOptionMessageDecoder itemOptionMessageDecoder = new ItemOptionMessageDecoder();
 		register(32, itemOptionMessageDecoder);
+
+		EnteredAmountMessageDecoder enteredAmountMessageDecoder = new EnteredAmountMessageDecoder();
+		register(64, enteredAmountMessageDecoder);
 
 		ButtonMessageDecoder buttonMessageDecoder = new ButtonMessageDecoder();
 		register(149, buttonMessageDecoder);
