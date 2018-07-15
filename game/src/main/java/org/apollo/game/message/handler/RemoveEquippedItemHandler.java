@@ -76,7 +76,11 @@ public final class RemoveEquippedItemHandler extends MessageHandler<ButtonMessag
 			}
 
 			Item item = equipment.get(slot);
-			int id = item.getId();
+
+			if (item == null) {
+				message.terminate();
+				return;
+			}
 
 			if (inventory.freeSlots() == 0 && !item.getDefinition().isStackable()) {
 				inventory.forceCapacityExceeded();
@@ -84,6 +88,7 @@ public final class RemoveEquippedItemHandler extends MessageHandler<ButtonMessag
 				return;
 			}
 
+			int id = item.getId();
 			boolean removed;
 
 			inventory.stopFiringEvents();

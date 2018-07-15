@@ -114,6 +114,9 @@ public class Release83 extends Release {
 		register(ServerChatMessage.class, new ServerMessageMessageEncoder());
 		register(EnterAmountMessage.class, new EnterAmountMessageEncoder());
 		register(CloseEnterAmountMessage.class, new CloseEnterAmountMessageEncoder());
+		register(SetWidgetVisibilityMessage.class, new SetWidgetVisibilityMessageEncoder());
+		register(ConfigMessage.class, new ConfigMessageEncoder());
+		register(ToggleMouseZoomMessage.class, new ToggleMouseZoomMessageEncoder());
 
 		WalkMessageDecoder walkingDecoder = new WalkMessageDecoder();
 		register(177, walkingDecoder);
@@ -139,5 +142,8 @@ public class Release83 extends Release {
 		register(245, buttonMessageDecoder);
 		register(77, buttonMessageDecoder);
 		register(153, buttonMessageDecoder);
+
+		ObjectActionMessageDecoder objectActionMessageDecoder = new ObjectActionMessageDecoder();
+		register(166, objectActionMessageDecoder);
 	}
 }

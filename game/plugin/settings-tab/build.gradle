@@ -1,0 +1,6 @@
+plugin {
+    name = "settings_tab"
+    authors = [
+        "Steve Soltys",
+    ]
+}

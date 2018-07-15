@@ -9,6 +9,10 @@ public class InterfaceConstants {
 
 	public static final int EQUIPMENT_ID = 387;
 
+	public static final int PRAYER_ID = 541;
+
+	public static final int SETTINGS_ID = 261;
+
 	/**
 	 * The layer and interface ids of the side bar tabs.
 	 * Interesting note - the layers are also considered screen areas.
@@ -22,7 +26,7 @@ public class InterfaceConstants {
 		QUESTS(548, 65, 399),
 		INVENTORY(548, 66, 149),
 		EQUIPMENT(548, 67, EQUIPMENT_ID),
-		PRAYER(548, 68, 541),
+		PRAYER(548, 68, PRAYER_ID),
 		SPELLBOOK(548, 69, 218),
 		CLAN_CHAT(548, 70, 589),
 		FRIENDS(548, 71, 429),
@@ -39,7 +43,7 @@ public class InterfaceConstants {
 		QUESTS_RESIZABLE(161, 63, 399),
 		INVENTORY_RESIZABLE(161, 64, 149),
 		EQUIPMENT_RESIZABLE(161, 65, EQUIPMENT_ID),
-		PRAYER_RESIZABLE(161, 66, 541),
+		PRAYER_RESIZABLE(161, 66, PRAYER_ID),
 		SPELLBOOK_RESIZABLE(161, 67, 218),
 		CLAN_CHAT_RESIZABLE(161, 68, 589),
 		FRIENDS_RESIZABLE(161, 69, 429),
@@ -56,7 +60,7 @@ public class InterfaceConstants {
 		QUESTS_REARRANGED(164, 61, 399),
 		INVENTORY_REARRANGED(164, 62, 149),
 		EQUIPMENT_REARRANGED(164, 63, EQUIPMENT_ID),
-		PRAYER_REARRANGED(164, 64, 541),
+		PRAYER_REARRANGED(164, 64, PRAYER_ID),
 		SPELLBOOK_REARRANGED(164, 65, 218),
 		CLAN_CHAT_REARRANGED(164, 66, 589),
 		FRIENDS_REARRANGED(164, 67, 429),

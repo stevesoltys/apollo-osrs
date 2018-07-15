@@ -3,50 +3,33 @@ package org.apollo.game.message.impl;
 import org.apollo.net.message.Message;
 
 /**
- * A {@link Message} sent to the client that changes the state of a hidden widget component (e.g. the special attack bar
- * on the weapon tab).
+ * A {@link Message} sent to the client that changes the state of a widget component.
  *
- * @author Chris Fletcher
+ * @author Steve Soltys
  */
-public final class SetWidgetVisibilityMessage extends Message {
+public class SetWidgetVisibilityMessage extends Message {
 
-	/**
-	 * The component id.
-	 */
-	private final int component;
+	private final int interfaceId;
 
-	/**
-	 * Visible flag.
-	 */
-	private final boolean visible;
+	private final int id;
 
-	/**
-	 * Creates the interface component state message.
-	 *
-	 * @param component The compononent id.
-	 * @param visible The flag for showing or hiding the component.
-	 */
-	public SetWidgetVisibilityMessage(int component, boolean visible) {
-		this.component = component;
-		this.visible = visible;
+	private final boolean enabled;
+
+	public SetWidgetVisibilityMessage(int interfaceId, int id, boolean enabled) {
+		this.interfaceId = interfaceId;
+		this.id = id;
+		this.enabled = enabled;
 	}
 
-	/**
-	 * Gets the id of the interface component.
-	 *
-	 * @return The component id.
-	 */
-	public int getWidgetId() {
-		return component;
+	public int getInterfaceId() {
+		return interfaceId;
 	}
 
-	/**
-	 * Gets the visible flag.
-	 *
-	 * @return {@code true} if the component has been set to visible, {@code false} if not.
-	 */
-	public boolean isVisible() {
-		return visible;
+	public int getId() {
+		return id;
 	}
 
+	public boolean isEnabled() {
+		return enabled;
+	}
 }

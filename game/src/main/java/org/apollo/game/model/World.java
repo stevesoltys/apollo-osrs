@@ -231,10 +231,10 @@ public final class World {
 			new WorldMapDecoder(cache, collisionManager)
 		);
 
-//		secondStageDecoder.block();
+		secondStageDecoder.block();
 
 		// Build collision matrices for the first time
-//		collisionManager.build(false);
+		collisionManager.build(false);
 		regions.addRegionListener(new CollisionUpdateListener(collisionManager));
 
 		npcMovement = new NpcMovementTask(collisionManager); // Must be exactly here because of ordering issues.
