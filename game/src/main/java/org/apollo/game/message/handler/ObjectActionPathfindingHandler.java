@@ -1,5 +1,6 @@
 package org.apollo.game.message.handler;
 
+import org.apollo.game.message.impl.ObjectActionMessage;
 import org.apollo.game.message.impl.WalkMessage;
 import org.apollo.game.model.World;
 import org.apollo.game.model.entity.Player;
@@ -8,11 +9,11 @@ import org.apollo.game.model.entity.path.AStarPathfindingAlgorithm;
 import org.apollo.game.model.entity.path.EuclideanHeuristic;
 
 /**
- * A {@link MessageHandler} that handles {@link WalkMessage}s.
+ * A pathfinding {@link MessageHandler} for the {@link ObjectActionMessage}.
  *
- * @author Graham
+ * @author Steve Soltys
  */
-public final class WalkMessageHandler extends MessageHandler<WalkMessage> {
+public class ObjectActionPathfindingHandler extends MessageHandler<ObjectActionMessage> {
 
 	/**
 	 * The pathfinding algorithm.
@@ -24,33 +25,17 @@ public final class WalkMessageHandler extends MessageHandler<WalkMessage> {
 	 *
 	 * @param world The {@link World} the {@link WalkMessage} occurred in.
 	 */
-	public WalkMessageHandler(World world) {
+	public ObjectActionPathfindingHandler(World world) {
 		super(world);
 
 		pathfindingAlgorithm = new AStarPathfindingAlgorithm(world.getCollisionManager(), new EuclideanHeuristic());
 	}
 
 	@Override
-	public void handle(Player player, WalkMessage message) {
+	public void handle(Player player, ObjectActionMessage message) {
 		WalkingQueue queue = player.getWalkingQueue();
 
-		if (!player.getPosition().isWithinDistance(message.getDestination(), 20)) {
-			message.terminate();
-			return;
-		}
-
-		queue.addSteps(pathfindingAlgorithm.find(player.getPosition(), message.getDestination()));
-
-		queue.setRunning(message.isRunning() || player.isRunning());
-		player.getInterfaceSet().close();
-
-		if (queue.size() > 0) {
-			player.stopAction();
-		}
-
-		if (player.getInteractingMob() != null) {
-			player.resetInteractingMob();
-		}
+		queue.addSteps(pathfindingAlgorithm.find(player.getPosition(), message.getPosition()));
+		queue.setRunning(player.isRunning());
 	}
-
 }

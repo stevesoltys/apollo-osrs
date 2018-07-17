@@ -117,6 +117,13 @@ public class Release83 extends Release {
 		register(SetWidgetVisibilityMessage.class, new SetWidgetVisibilityMessageEncoder());
 		register(ConfigMessage.class, new ConfigMessageEncoder());
 		register(ToggleMouseZoomMessage.class, new ToggleMouseZoomMessageEncoder());
+		register(SetPlayerActionMessage.class, new SetPlayerActionMessageEncoder());
+
+		register(GroupedRegionUpdateMessage.class, new GroupedRegionUpdateMessageEncoder(this));
+		register(SendObjectMessage.class, new SendObjectMessageEncoder());
+		register(RemoveObjectMessage.class, new RemoveObjectMessageEncoder());
+		register(SendTileItemMessage.class, new SendTileItemMessageEncoder());
+		register(RemoveTileItemMessage.class, new RemoveTileItemMessageEncoder());
 
 		WalkMessageDecoder walkingDecoder = new WalkMessageDecoder();
 		register(177, walkingDecoder);
@@ -128,6 +135,9 @@ public class Release83 extends Release {
 
 		ItemOptionMessageDecoder itemOptionMessageDecoder = new ItemOptionMessageDecoder();
 		register(32, itemOptionMessageDecoder);
+
+		register(183, new DropItemMessageDecoder());
+		register(5, new TakeTileItemMessageDecoder());
 
 		EnteredAmountMessageDecoder enteredAmountMessageDecoder = new EnteredAmountMessageDecoder();
 		register(64, enteredAmountMessageDecoder);
@@ -145,5 +155,8 @@ public class Release83 extends Release {
 
 		ObjectActionMessageDecoder objectActionMessageDecoder = new ObjectActionMessageDecoder();
 		register(166, objectActionMessageDecoder);
+
+		PlayerActionMessageDecoder playerActionMessageDecoder = new PlayerActionMessageDecoder();
+		register(111, playerActionMessageDecoder);
 	}
 }

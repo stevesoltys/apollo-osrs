@@ -54,13 +54,12 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 	public void run() {
 		Position lastKnownRegion = player.getLastKnownRegion();
 		boolean regionChanged = player.hasRegionChanged();
-		int[] appearanceTickets = player.getAppearanceTickets();
 
 		SynchronizationBlockSet blockSet = player.getBlockSet();
 		Position position = player.getPosition();
 
 		SynchronizationSegment segment = (player.isTeleporting() || player.hasRegionChanged()) ?
-				new TeleportSegment(blockSet, position) : new MovementSegment(blockSet, player.getDirections());
+			new TeleportSegment(blockSet, position) : new MovementSegment(blockSet, player.getDirections());
 
 		List<Player> localPlayers = player.getLocalPlayerList();
 		int oldCount = localPlayers.size();
@@ -88,7 +87,7 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 		regions.add(current.getCoordinates());
 
 		Stream<Player> players = regions.stream().map(repository::get)
-				.flatMap(region -> region.getEntities(EntityType.PLAYER));
+			.flatMap(region -> region.getEntities(EntityType.PLAYER));
 
 		Iterator<Player> iterator = players.iterator();
 
@@ -112,44 +111,25 @@ public final class PlayerSynchronizationTask extends SynchronizationTask {
 
 				int index = other.getIndex();
 
-				if (!blockSet.contains(AppearanceBlock.class) && !hasCachedAppearance(appearanceTickets, index - 1, other.getAppearanceTicket())) {
+				if (!blockSet.contains(AppearanceBlock.class)) {
 					blockSet = blockSet.clone();
 					blockSet.add(SynchronizationBlock.createAppearanceBlock(other));
 				}
 
-				segments.add(new AddPlayerSegment(blockSet, index, local));
+				segments.add(new AddPlayerSegment(blockSet, index, local, other.getLastDirection()));
 			}
 		}
 
 		PlayerSynchronizationMessage message = new PlayerSynchronizationMessage(lastKnownRegion, position,
-				regionChanged, segment, oldCount, segments);
+			regionChanged, segment, oldCount, segments);
 		player.send(message);
-	}
-
-	/**
-	 * Tests whether or not the specified Player has a cached appearance within
-	 * the specified appearance ticket array.
-	 *
-	 * @param appearanceTickets The appearance tickets.
-	 * @param index The index of the Player.
-	 * @param appearanceTicket The current appearance ticket for the Player.
-	 * @return {@code true} if the specified Player has a cached appearance
-	 *         otherwise {@code false}.
-	 */
-	private boolean hasCachedAppearance(int[] appearanceTickets, int index, int appearanceTicket) {
-		if (appearanceTickets[index] != appearanceTicket) {
-			appearanceTickets[index] = appearanceTicket;
-			return false;
-		}
-
-		return true;
 	}
 
 	/**
 	 * Returns whether or not the specified {@link Player} should be removed.
 	 *
 	 * @param position The {@link Position} of the Player being updated.
-	 * @param other The Player being tested.
+	 * @param other    The Player being tested.
 	 * @return {@code true} iff the specified Player should be removed.
 	 */
 	private boolean removeable(Position position, int distance, Player other) {

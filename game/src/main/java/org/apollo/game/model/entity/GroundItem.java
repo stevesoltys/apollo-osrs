@@ -19,40 +19,17 @@ import java.util.Objects;
 public final class GroundItem extends Entity implements GroupableEntity {
 
 	/**
-	 * Creates a new <strong>global</strong> GroundItem.
-	 *
-	 * @param world The {@link World} containing the GroundItem.
-	 * @param position The {@link Position} of the Item.
-	 * @param item The Item displayed on the ground.
-	 * @return The GroundItem.
+	 * The Player who dropped this GroundItem.
 	 */
-	public static GroundItem createGlobal(World world, Position position, Item item) {
-		return new GroundItem(world, position, item, -1, true);
-	}
-
-	/**
-	 * Creates a new <strong>non-global</strong> dropped GroundItem.
-	 *
-	 * @param world The {@link World} containing the GroundItem.
-	 * @param position The {@link Position} of the Item.
-	 * @param item The Item displayed on the ground.
-	 * @param owner The the {@link Player} who dropped this GroundItem.
-	 * @return The GroundItem.
-	 */
-	public static GroundItem dropped(World world, Position position, Item item, Player owner) {
-		return new GroundItem(world, position, item, owner.getIndex(), false);
-	}
-
-	/**
-	 * The index of the Player who dropped this GroundItem.
-	 */
-	private final int index;
-
+	private final Player player;
 	/**
 	 * The Item displayed on the ground.
 	 */
 	private final Item item;
-
+	/**
+	 * The ground item index;
+	 */
+	private int index;
 	/**
 	 * Represents the global state of this GroundItem.
 	 */
@@ -66,32 +43,66 @@ public final class GroundItem extends Entity implements GroupableEntity {
 	/**
 	 * Creates the GroundItem.
 	 *
-	 * @param world The {@link World} containing the GroundItem.
+	 * @param world    The {@link World} containing the GroundItem.
 	 * @param position The {@link Position} of the GroundItem.
-	 * @param item The Item displayed on the ground.
-	 * @param index The index of the {@link Player} who dropped this GroundItem.
-	 * @param global The global state of this GroundItem.
+	 * @param item     The Item displayed on the ground.
+	 * @param player   The {@link Player} who dropped this GroundItem.
+	 * @param global   The global state of this GroundItem.
 	 */
-	private GroundItem(World world, Position position, Item item, int index, boolean global) {
+	private GroundItem(World world, Position position, Item item, Player player, boolean global) {
 		super(world, position);
+		this.index = -1;
 		this.item = item;
-		this.index = index;
+		this.player = player;
 		this.global = global;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof GroundItem) {
-			GroundItem other = (GroundItem) obj;
-			return item.equals(other.item) && position.equals(other.position) && global == other.global;
-		}
+	/**
+	 * Creates a new <strong>global</strong> GroundItem.
+	 *
+	 * @param world    The {@link World} containing the GroundItem.
+	 * @param position The {@link Position} of the Item.
+	 * @param item     The Item displayed on the ground.
+	 * @return The GroundItem.
+	 */
+	public static GroundItem createGlobal(World world, Position position, Item item) {
+		return new GroundItem(world, position, item, null, true);
+	}
 
-		return false;
+	/**
+	 * Creates a new <strong>non-global</strong> dropped GroundItem.
+	 *
+	 * @param world    The {@link World} containing the GroundItem.
+	 * @param position The {@link Position} of the Item.
+	 * @param item     The Item displayed on the ground.
+	 * @param owner    The the {@link Player} who dropped this GroundItem.
+	 * @return The GroundItem.
+	 */
+	public static GroundItem dropped(World world, Position position, Item item, Player owner) {
+		return new GroundItem(world, position, item, owner, false);
 	}
 
 	@Override
 	public EntityType getEntityType() {
 		return EntityType.GROUND_ITEM;
+	}
+
+	/**
+	 * Gets the index.
+	 *
+	 * @return The index.
+	 */
+	public int getIndex() {
+		return index;
+	}
+
+	/**
+	 * Sets the index.
+	 *
+	 * @param index The index.
+	 */
+	public void setIndex(int index) {
+		this.index = index;
 	}
 
 	/**
@@ -104,13 +115,13 @@ public final class GroundItem extends Entity implements GroupableEntity {
 	}
 
 	/**
-	 * Gets the index of the {@link Player} who dropped this GroundItem, or {@code -1} if this GroundItem was not
-	 * dropped by a Player.
+	 * Gets the {@link Player} who dropped this GroundItem, or {@code null} if this GroundItem was not dropped by a
+	 * Player.
 	 *
-	 * @return The index.
+	 * @return The player.
 	 */
-	public int getOwnerIndex() {
-		return index;
+	public Player getOwner() {
+		return player;
 	}
 
 	/**
@@ -153,13 +164,28 @@ public final class GroundItem extends Entity implements GroupableEntity {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		GroundItem that = (GroundItem) o;
+		return index == that.index &&
+			Objects.equals(position, that.position) &&
+			Objects.equals(player, that.player) &&
+			Objects.equals(item, that.item);
+	}
+
+	@Override
 	public int hashCode() {
-		return Objects.hash(item, position, global);
+		return Objects.hash(index, position, player, item);
+	}
+
+	@Override
+	public boolean visibleTo(Player player) {
+		return global || player.equals(getOwner());
 	}
 
 	@Override
 	public UpdateOperation<GroundItem> toUpdateOperation(Region region, EntityUpdateType operation) {
 		return new ItemUpdateOperation(region, operation, this);
 	}
-
 }

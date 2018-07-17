@@ -14,12 +14,7 @@ import org.apollo.game.model.entity.EntityType;
 import org.apollo.game.model.entity.obj.DynamicGameObject;
 import org.apollo.game.model.entity.obj.StaticGameObject;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -202,7 +197,8 @@ public final class Region {
 	public Set<RegionUpdateMessage> encode(int height) {
 		Set<RegionUpdateMessage> additions = entities.values().stream()
 			.flatMap(Set::stream) // TODO: Stop hurting my eyeballs.
-			.filter(entity -> !entity.getEntityType().isMob() && !(entity instanceof StaticGameObject) && (!(entity instanceof DynamicGameObject) || entity.getPosition().getHeight() == height))
+			.filter(entity -> !entity.getEntityType().isMob() && !(entity instanceof StaticGameObject) &&
+				(!(entity instanceof DynamicGameObject) || entity.getPosition().getHeight() == height))
 			.map(entity -> ((GroupableEntity) entity).toUpdateOperation(this, EntityUpdateType.ADD).toMessage())
 			.collect(Collectors.toSet());
 

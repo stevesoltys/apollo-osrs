@@ -7,6 +7,8 @@ import org.apollo.game.model.entity.Mob
 import org.apollo.game.model.entity.Npc
 import org.apollo.game.model.entity.Player
 import org.apollo.game.model.entity.obj.GameObject
+import org.apollo.game.model.entity.path.AStarPathfindingAlgorithm
+import org.apollo.game.model.entity.path.EuclideanHeuristic
 import org.apollo.game.model.entity.path.SimplePathfindingAlgorithm
 
 private fun bounds(target: Entity): Pair<Int, Int> = when (target) {
@@ -24,7 +26,7 @@ private fun bounds(target: Entity): Pair<Int, Int> = when (target) {
     else -> error("Invalid entity type")
 }
 
-fun Mob.walkTo(target: Entity, positioningDirection: Direction? = null) {
+fun Mob.walkTo(target: Entity, positioningDirection: Direction? = null, smart: Boolean = false) {
     val (sourceWidth, sourceHeight) = bounds(target)
     val (targetWidth, targetHeight) = bounds(target)
 
@@ -37,19 +39,24 @@ fun Mob.walkTo(target: Entity, positioningDirection: Direction? = null) {
     val offsetX = if (dx < 0) -sourceWidth else if (dx > 0) 1 else 0
     val offsetY = if (dy < 0) -sourceHeight else if (dy > 0) 1 else 0
 
-    walkTo(Position(targetX + offsetX, targetY + offsetY, position.height))
+    walkTo(Position(targetX + offsetX, targetY + offsetY, position.height), smart = smart)
 }
 
 fun Mob.walkBehind(target: Mob) {
-    walkTo(target, target.lastDirection.opposite())
+    walkTo(target, target.lastDirection.opposite(), smart = true)
 }
 
-fun Mob.walkTo(target: Position, positionPredicate: ((Position) -> Boolean)? = null) {
+fun Mob.walkTo(target: Position, positionPredicate: ((Position) -> Boolean)? = null, smart: Boolean = false) {
     if (position == target) {
         return
     }
 
-    val pathfinder = SimplePathfindingAlgorithm(world.collisionManager)
+    val pathfinder = if (smart) {
+        AStarPathfindingAlgorithm(world.collisionManager, EuclideanHeuristic())
+    } else {
+        SimplePathfindingAlgorithm(world.collisionManager)
+    }
+
     val path = pathfinder.find(position, target)
 
     if (positionPredicate == null) {

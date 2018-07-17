@@ -17,7 +17,7 @@ class GroundItemSynchronizationTask(private val groundItem: GroundItem) : Schedu
         /**
          * The amount of time, in pulses, in which this [GroundItem] will be globally visible.
          */
-        const val TRADABLE_TIME_UNTIL_GLOBAL = 60000 / GameConstants.PULSE_DELAY
+        const val TRADABLE_TIME_UNTIL_GLOBAL = 10000 / GameConstants.PULSE_DELAY
 
         /**
          * The amount of time, in pulses, in which this [GroundItem] will expire and be removed from the [World].
@@ -37,7 +37,7 @@ class GroundItemSynchronizationTask(private val groundItem: GroundItem) : Schedu
 
     override fun execute() {
         val world = groundItem.world
-        val owner = world.playerRepository[groundItem.ownerIndex]
+        val owner = groundItem.owner
         val untradable = false // TODO: item.getDefinition().isTradable();
 
         if (!groundItem.isAvailable) {
@@ -46,23 +46,22 @@ class GroundItemSynchronizationTask(private val groundItem: GroundItem) : Schedu
         }
 
         // Untradable items never go global
-        if (untradable) {
-            if (pulses >= UNTRADABLE_TIME_UNTIL_EXPIRE) {
-                world.removeGroundItem(owner, groundItem)
-                stop()
-            }
-            return
-        }
+//        if (untradable) {
+//            if (pulses >= UNTRADABLE_TIME_UNTIL_EXPIRE) {
+//                world.removeGroundItem(groundItem)
+//                stop()
+//            }
+//            return
+//        }
 
         if (groundItem.isGlobal) {
             if (pulses >= TIME_UNTIL_EXPIRE) {
-                world.removeGroundItem(owner, groundItem)
+                world.removeGroundItem(world, groundItem)
                 stop()
             }
         } else {
             if (pulses >= TRADABLE_TIME_UNTIL_GLOBAL) {
-                groundItem.globalize()
-                world.addGroundItem(owner, groundItem)
+                world.globalizeGroundItem(groundItem)
             }
         }
 

@@ -1,5 +1,6 @@
 package org.apollo.game.message.impl;
 
+import org.apollo.game.model.entity.Player;
 import org.apollo.net.message.Message;
 
 /**
@@ -39,4 +40,11 @@ public abstract class RegionUpdateMessage extends Message implements Comparable<
 	 */
 	public abstract int priority();
 
+	/**
+	 * Gets a flag indicating whether or not this region update message is visible to the player.
+	 *
+	 * @param player The player.
+	 * @return The visibility flag.
+	 */
+	public abstract boolean visibleTo(Player player);
 }

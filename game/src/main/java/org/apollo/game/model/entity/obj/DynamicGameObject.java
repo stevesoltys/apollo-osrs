@@ -1,12 +1,12 @@
 package org.apollo.game.model.entity.obj;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 import org.apollo.game.model.entity.EntityType;
 import org.apollo.game.model.entity.Player;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A {@link GameObject} that is loaded dynamically, usually for specific Players.
@@ -16,12 +16,37 @@ import org.apollo.game.model.entity.Player;
 public final class DynamicGameObject extends GameObject {
 
 	/**
+	 * The flag indicating whether or not this DynamicGameObject is visible to every player.
+	 */
+	private final boolean alwaysVisible;
+	/**
+	 * The Set of Player usernames that can view this DynamicGameObject.
+	 */
+	private final Set<String> players = new HashSet<>(); // TODO more appropriate type?
+
+	/**
+	 * Creates the DynamicGameObject.
+	 *
+	 * @param world         The {@link World} containing the DynamicGameObject.
+	 * @param id            The id of the DynamicGameObject
+	 * @param position      The {@link Position} of the DynamicGameObject.
+	 * @param type          The type of the DynamicGameObject.
+	 * @param orientation   The orientation of the DynamicGameObject.
+	 * @param alwaysVisible The flag indicates whether or not this DynamicGameObject is visible to every player.
+	 */
+	private DynamicGameObject(World world, int id, Position position, int type, int orientation,
+							  boolean alwaysVisible) {
+		super(world, id, position, type, orientation);
+		this.alwaysVisible = alwaysVisible;
+	}
+
+	/**
 	 * Creates a DynamicGameObject that is visible only to {@link Player}s specified later.
 	 *
-	 * @param world The {@link World} containing the DynamicGameObject.
-	 * @param id The id of the DynamicGameObject
-	 * @param position The {@link Position} of the DynamicGameObject.
-	 * @param type The type of the DynamicGameObject.
+	 * @param world       The {@link World} containing the DynamicGameObject.
+	 * @param id          The id of the DynamicGameObject
+	 * @param position    The {@link Position} of the DynamicGameObject.
+	 * @param type        The type of the DynamicGameObject.
 	 * @param orientation The orientation of the DynamicGameObject.
 	 * @return The DynamicGameObject.
 	 */
@@ -32,42 +57,21 @@ public final class DynamicGameObject extends GameObject {
 	/**
 	 * Creates a DynamicGameObject that is always visible.
 	 *
-	 * @param world The {@link World} containing the DynamicGameObject.
-	 * @param id The id of the DynamicGameObject
-	 * @param position The {@link Position} of the DynamicGameObject.
-	 * @param type The type of the DynamicGameObject.
+	 * @param world       The {@link World} containing the DynamicGameObject.
+	 * @param id          The id of the DynamicGameObject
+	 * @param position    The {@link Position} of the DynamicGameObject.
+	 * @param type        The type of the DynamicGameObject.
 	 * @param orientation The orientation of the DynamicGameObject.
 	 * @return The DynamicGameObject.
 	 */
 	public static DynamicGameObject createPublic(World world, int id, Position position, int type,
-			int orientation) {
+												 int orientation) {
 		return new DynamicGameObject(world, id, position, type, orientation, true);
 	}
 
-	/**
-	 * The flag indicating whether or not this DynamicGameObject is visible to every player.
-	 */
-	private final boolean alwaysVisible;
-
-	/**
-	 * The Set of Player usernames that can view this DynamicGameObject.
-	 */
-	private final Set<String> players = new HashSet<>(); // TODO more appropriate type?
-
-	/**
-	 * Creates the DynamicGameObject.
-	 *
-	 * @param world The {@link World} containing the DynamicGameObject.
-	 * @param id The id of the DynamicGameObject
-	 * @param position The {@link Position} of the DynamicGameObject.
-	 * @param type The type of the DynamicGameObject.
-	 * @param orientation The orientation of the DynamicGameObject.
-	 * @param alwaysVisible The flag indicates whether or not this DynamicGameObject is visible to every player.
-	 */
-	private DynamicGameObject(World world, int id, Position position, int type, int orientation,
-			boolean alwaysVisible) {
-		super(world, id, position, type, orientation);
-		this.alwaysVisible = alwaysVisible;
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
 	}
 
 	/**

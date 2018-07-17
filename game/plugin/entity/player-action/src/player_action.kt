@@ -3,11 +3,11 @@ package org.apollo.game.plugin.entity.player_action
 import org.apollo.game.message.impl.SetPlayerActionMessage
 import org.apollo.game.model.entity.Player
 import org.apollo.game.model.event.PlayerEvent
-import java.util.EnumSet
+import java.util.*
 
-enum class PlayerActionType(val displayName: String, val slot: Int, val primary: Boolean = true) {
-    ATTACK("Attack", 2),
-    CHALLENGE("Challenge", 2),
+enum class PlayerActionType(val displayName: String, val slot: Int, val primary: Boolean = false) {
+    ATTACK("Attack", 1),
+    CHALLENGE("Challenge", 1),
     FOLLOW("Follow", 4),
     TRADE("Trade with", 5)
 }

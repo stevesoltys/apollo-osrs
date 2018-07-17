@@ -56,10 +56,6 @@ public final class Player extends Mob {
 	}
 
 	/**
-	 * This appearance tickets for this Player.
-	 */
-	private final int[] appearanceTickets = new int[WorldConstants.MAXIMUM_PLAYERS];
-	/**
 	 * This player's bank.
 	 */
 	private final Inventory bank = new Inventory(InventoryConstants.BANK_CAPACITY, StackMode.STACK_ALWAYS);
@@ -291,24 +287,6 @@ public final class Player extends Mob {
 	}
 
 	/**
-	 * Gets this Players appearance ticket.
-	 *
-	 * @return This Players appearance ticket.
-	 */
-	public int getAppearanceTicket() {
-		return appearanceTicket;
-	}
-
-	/**
-	 * Gets all of this Players appearance tickets.
-	 *
-	 * @return All of this Players appearance tickets.
-	 */
-	public int[] getAppearanceTickets() {
-		return appearanceTickets;
-	}
-
-	/**
 	 * Gets the mob's bank.
 	 *
 	 * @return The bank.
@@ -414,7 +392,7 @@ public final class Player extends Mob {
 
 	@Override
 	public int getInteractionIndex() {
-		return getIndex() | 0x8000; // TODO magic constant
+		return getIndex() + 32768; // TODO magic constant
 	}
 
 	/**

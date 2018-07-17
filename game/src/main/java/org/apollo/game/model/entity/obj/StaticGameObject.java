@@ -17,10 +17,10 @@ public final class StaticGameObject extends GameObject {
 	/**
 	 * Creates the StaticGameObject.
 	 *
-	 * @param world The {@link World} containing the StaticGameObject.
-	 * @param id The id of the StaticGameObject
-	 * @param position The {@link Position} of the StaticGameObject.
-	 * @param type The type code of the StaticGameObject.
+	 * @param world       The {@link World} containing the StaticGameObject.
+	 * @param id          The id of the StaticGameObject
+	 * @param position    The {@link Position} of the StaticGameObject.
+	 * @param type        The type code of the StaticGameObject.
 	 * @param orientation The orientation of the StaticGameObject.
 	 */
 	public StaticGameObject(World world, int id, Position position, int type, int orientation) {
@@ -38,6 +38,11 @@ public final class StaticGameObject extends GameObject {
 		RegionCoordinates coordinates = position.getRegionCoordinates();
 
 		return repository.get(coordinates).contains(this);
+	}
+
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
 	}
 
 }

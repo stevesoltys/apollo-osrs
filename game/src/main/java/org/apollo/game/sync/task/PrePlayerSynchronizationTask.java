@@ -1,9 +1,5 @@
 package org.apollo.game.sync.task;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apollo.game.message.impl.ClearRegionMessage;
 import org.apollo.game.message.impl.GroupedRegionUpdateMessage;
 import org.apollo.game.message.impl.RegionChangeMessage;
@@ -13,6 +9,11 @@ import org.apollo.game.model.area.Region;
 import org.apollo.game.model.area.RegionCoordinates;
 import org.apollo.game.model.area.RegionRepository;
 import org.apollo.game.model.entity.Player;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A {@link SynchronizationTask} which does pre-synchronization work for the specified {@link Player}.
@@ -42,12 +43,12 @@ public final class PrePlayerSynchronizationTask extends SynchronizationTask {
 	/**
 	 * Creates the {@link PrePlayerSynchronizationTask} for the specified {@link Player}.
 	 *
-	 * @param player The Player.
+	 * @param player  The Player.
 	 * @param encodes The Map containing Region encodes.
 	 * @param updates The {@link Map} containing {@link Region} updates.
 	 */
 	public PrePlayerSynchronizationTask(Player player, Map<RegionCoordinates, Set<RegionUpdateMessage>> encodes,
-	                                    Map<RegionCoordinates, Set<RegionUpdateMessage>> updates) {
+										Map<RegionCoordinates, Set<RegionUpdateMessage>> updates) {
 		this.player = player;
 		this.updates = updates;
 		this.encodes = encodes;
@@ -82,6 +83,10 @@ public final class PrePlayerSynchronizationTask extends SynchronizationTask {
 		Set<RegionCoordinates> differences = new HashSet<>(newViewable);
 		differences.retainAll(oldViewable);
 
+		for (RegionCoordinates difference : differences) {
+			player.getWorld().getCollisionManager().build(player.getWorld().getRegionRepository().get(difference));
+		}
+
 		Set<RegionCoordinates> full = new HashSet<>(newViewable);
 		if (local) {
 			full.removeAll(oldViewable);
@@ -109,9 +114,9 @@ public final class PrePlayerSynchronizationTask extends SynchronizationTask {
 	/**
 	 * Sends the updates for a {@link Region}
 	 *
-	 * @param position The {@link Position} of the last known region.
+	 * @param position    The {@link Position} of the last known region.
 	 * @param differences The {@link Set} of {@link RegionCoordinates} of Regions that changed.
-	 * @param full The {@link Set} of {@link RegionCoordinates} of Regions that require a full update.
+	 * @param full        The {@link Set} of {@link RegionCoordinates} of Regions that require a full update.
 	 */
 	private void sendUpdates(Position position, Set<RegionCoordinates> differences, Set<RegionCoordinates> full) {
 		RegionRepository repository = player.getWorld().getRegionRepository();
@@ -119,7 +124,9 @@ public final class PrePlayerSynchronizationTask extends SynchronizationTask {
 
 		for (RegionCoordinates coordinates : differences) {
 			Set<RegionUpdateMessage> messages = updates.computeIfAbsent(coordinates,
-				coords -> repository.get(coords).getUpdates(height));
+				coords -> repository.get(coords).getUpdates(height)).stream()
+				.filter(regionUpdateMessage -> regionUpdateMessage.visibleTo(player))
+				.collect(Collectors.toSet());
 
 			if (!messages.isEmpty()) {
 				player.send(new GroupedRegionUpdateMessage(position, coordinates, messages));
@@ -128,7 +135,9 @@ public final class PrePlayerSynchronizationTask extends SynchronizationTask {
 
 		for (RegionCoordinates coordinates : full) {
 			Set<RegionUpdateMessage> messages = encodes.computeIfAbsent(coordinates,
-				coords -> repository.get(coords).encode(height));
+				coords -> repository.get(coords).encode(height)).stream()
+				.filter(regionUpdateMessage -> regionUpdateMessage.visibleTo(player))
+				.collect(Collectors.toSet());
 
 			if (!messages.isEmpty()) {
 				player.send(new ClearRegionMessage(position, coordinates));

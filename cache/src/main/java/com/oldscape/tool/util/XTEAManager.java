@@ -18,11 +18,6 @@
  */
 package com.oldscape.tool.util;
 
-import com.oldscape.tool.cache.Constants;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,44 +50,44 @@ public class XTEAManager {
 	}
 
 	static {
-		try {
-
-			File xMapDir = new File(Constants.XMAP_PATH);
-
-			if (!xMapDir.exists()) {
-				xMapDir.mkdirs();
-			}
-
-			for (File file : xMapDir.listFiles()) {
-				if (file.getName().endsWith(".txt")) {
-					Integer regionID = Integer.valueOf(file.getName().substring(0, file.getName().indexOf(".txt")));
-
-					int[] keys = Files.lines(Paths.get(".").resolve(Constants.XMAP_PATH + file.getName()))
-							.map(Integer::valueOf).mapToInt(Integer::intValue).toArray();
-
-					maps.put(regionID, keys);
-				}
-			}
-
-			File xTableDir = new File(Constants.XTABLE_PATH);
-
-			if (!xTableDir.exists()) {
-				xTableDir.mkdirs();
-			}
-
-			for (File file : xTableDir.listFiles()) {
-				if (file.getName().endsWith(".txt")) {
-					Integer typeID = Integer.valueOf(file.getName().substring(0, file.getName().indexOf(".txt")));
-
-					int[] keys = Files.lines(Paths.get(".").resolve(Constants.XTABLE_PATH + file.getName()))
-							.map(Integer::valueOf).mapToInt(Integer::intValue).toArray();
-
-					tables.put(typeID, keys);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//
+//			File xMapDir = new File(Constants.XMAP_PATH);
+//
+//			if (!xMapDir.exists()) {
+//				xMapDir.mkdirs();
+//			}
+//
+//			for (File file : xMapDir.listFiles()) {
+//				if (file.getName().endsWith(".txt")) {
+//					Integer regionID = Integer.valueOf(file.getName().substring(0, file.getName().indexOf(".txt")));
+//
+//					int[] keys = Files.lines(Paths.get(".").resolve(Constants.XMAP_PATH + file.getName()))
+//							.map(Integer::valueOf).mapToInt(Integer::intValue).toArray();
+//
+//					maps.put(regionID, keys);
+//				}
+//			}
+//
+//			File xTableDir = new File(Constants.XTABLE_PATH);
+//
+//			if (!xTableDir.exists()) {
+//				xTableDir.mkdirs();
+//			}
+//
+//			for (File file : xTableDir.listFiles()) {
+//				if (file.getName().endsWith(".txt")) {
+//					Integer typeID = Integer.valueOf(file.getName().substring(0, file.getName().indexOf(".txt")));
+//
+//					int[] keys = Files.lines(Paths.get(".").resolve(Constants.XTABLE_PATH + file.getName()))
+//							.map(Integer::valueOf).mapToInt(Integer::intValue).toArray();
+//
+//					tables.put(typeID, keys);
+//				}
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public static void touch() {

@@ -1,6 +1,7 @@
 package org.apollo.game.message.impl;
 
 import org.apollo.game.model.Item;
+import org.apollo.game.model.entity.Player;
 import org.apollo.net.message.Message;
 
 /**
@@ -28,7 +29,7 @@ public final class UpdateTileItemMessage extends RegionUpdateMessage {
 	/**
 	 * Creates a new message that updates the previous amount of the item.
 	 *
-	 * @param item The item to be placed.
+	 * @param item           The item to be placed.
 	 * @param previousAmount The previous amount of the item.
 	 */
 	public UpdateTileItemMessage(Item item, int previousAmount) {
@@ -38,7 +39,7 @@ public final class UpdateTileItemMessage extends RegionUpdateMessage {
 	/**
 	 * Creates a new set tile item message.
 	 *
-	 * @param item The item to be placed.
+	 * @param item           The item to be placed.
 	 * @param previousAmount The previous amount of the item.
 	 * @param positionOffset The offset from the client's base position.
 	 */
@@ -106,4 +107,8 @@ public final class UpdateTileItemMessage extends RegionUpdateMessage {
 		return LOW_PRIORITY;
 	}
 
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
+	}
 }

@@ -571,5 +571,8 @@ public abstract class Mob extends Entity {
 		world.schedule(new SkillNormalizationTask(this));
 	}
 
-
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
+	}
 }

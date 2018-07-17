@@ -1,5 +1,6 @@
 package org.apollo.game.message.impl;
 
+import org.apollo.game.model.entity.Player;
 import org.apollo.game.model.entity.obj.GameObject;
 import org.apollo.net.message.Message;
 
@@ -86,4 +87,8 @@ public final class RemoveObjectMessage extends RegionUpdateMessage {
 		return HIGH_PRIORITY;
 	}
 
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
+	}
 }

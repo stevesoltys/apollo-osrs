@@ -1,7 +1,10 @@
 package org.apollo.game.message.impl;
 
 import org.apollo.game.model.Item;
+import org.apollo.game.model.entity.Player;
 import org.apollo.net.message.Message;
+
+import java.util.Objects;
 
 /**
  * A {@link Message} sent to the client to remove an item from a tile.
@@ -20,35 +23,21 @@ public final class RemoveTileItemMessage extends RegionUpdateMessage {
 	 */
 	private final int positionOffset;
 
+	private final boolean global;
+
+	private final Player owner;
+
 	/**
 	 * Creates the RemoveTileItemMessage.
 	 *
 	 * @param id The id of the {@link Item} to remove.
 	 * @param positionOffset The offset from the 'base' position.
 	 */
-	public RemoveTileItemMessage(int id, int positionOffset) {
+	public RemoveTileItemMessage(int id, int positionOffset, boolean global, Player owner) {
 		this.id = id;
 		this.positionOffset = positionOffset;
-	}
-
-	/**
-	 * Creates the RemoveTileItemMessage.
-	 *
-	 * @param item The {@link Item} to remove.
-	 * @param positionOffset The offset from the 'base' position.
-	 */
-	public RemoveTileItemMessage(Item item, int positionOffset) {
-		this(item.getId(), positionOffset);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj instanceof RemoveTileItemMessage) {
-			RemoveTileItemMessage other = (RemoveTileItemMessage) obj;
-			return id == other.id && positionOffset == other.positionOffset;
-		}
-
-		return false;
+		this.global = global;
+		this.owner = owner;
 	}
 
 	/**
@@ -70,14 +59,29 @@ public final class RemoveTileItemMessage extends RegionUpdateMessage {
 	}
 
 	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		RemoveTileItemMessage that = (RemoveTileItemMessage) o;
+		return id == that.id &&
+			positionOffset == that.positionOffset &&
+			global == that.global &&
+			Objects.equals(owner, that.owner);
+	}
+
+	@Override
 	public int hashCode() {
-		final int prime = 31;
-		return prime * id + positionOffset;
+		return Objects.hash(id, positionOffset, global, owner);
 	}
 
 	@Override
 	public int priority() {
 		return HIGH_PRIORITY;
+	}
+
+	@Override
+	public boolean visibleTo(Player player) {
+		return global || (owner != null && owner.getEncodedName() == player.getEncodedName());
 	}
 
 }

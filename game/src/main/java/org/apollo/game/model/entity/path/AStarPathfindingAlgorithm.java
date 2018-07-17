@@ -25,7 +25,7 @@ public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 	 *
 	 * TODO: This sucks.
 	 */
-	private static final long MAX_ITERATIONS = 2000;
+	private static final long MAX_ITERATIONS = 6000;
 
 	/**
 	 * The Heuristic used by this PathfindingAlgorithm.

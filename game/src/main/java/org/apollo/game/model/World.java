@@ -39,30 +39,6 @@ import java.util.logging.Logger;
 public final class World {
 
 	/**
-	 * Represents the different status codes for registering a player.
-	 *
-	 * @author Graham
-	 */
-	public enum RegistrationStatus {
-
-		/**
-		 * Indicates that the player is already online.
-		 */
-		ALREADY_ONLINE,
-
-		/**
-		 * Indicates that the player was registered successfully.
-		 */
-		OK,
-
-		/**
-		 * Indicates the world is full.
-		 */
-		WORLD_FULL;
-
-	}
-
-	/**
 	 * The logger for this class.
 	 */
 	private static final Logger logger = Logger.getLogger(World.class.getName());
@@ -93,9 +69,9 @@ public final class World {
 	private final MobRepository<Player> playerRepository = new MobRepository<>(WorldConstants.MAXIMUM_PLAYERS);
 
 	/**
-	 * A {@link Map} of player usernames to their local {@link Set} of {@link GroundItem}s.
+	 * A {@link List} of {@link GroundItem}s.
 	 */
-	private final Map<Long, Set<GroundItem>> groundItems = new HashMap<>(WorldConstants.MAXIMUM_PLAYERS);
+	private final List<GroundItem> groundItems = new ArrayList<>();
 
 	/**
 	 * A {@link Map} of player usernames and the player objects.
@@ -142,7 +118,9 @@ public final class World {
 	 *
 	 * @return The collision manager
 	 */
-	public CollisionManager getCollisionManager() { return collisionManager; }
+	public CollisionManager getCollisionManager() {
+		return collisionManager;
+	}
 
 	/**
 	 * Gets the command dispatcher.
@@ -151,6 +129,15 @@ public final class World {
 	 */
 	public CommandDispatcher getCommandDispatcher() {
 		return commandDispatcher;
+	}
+
+	/**
+	 * Gets the list of ground items.
+	 *
+	 * @return The list of ground items.
+	 */
+	public List<GroundItem> getGroundItems() {
+		return groundItems;
 	}
 
 	/**
@@ -180,15 +167,6 @@ public final class World {
 	 */
 	public MobRepository<Player> getPlayerRepository() {
 		return playerRepository;
-	}
-
-	/**
-	 * Gets the {@link Map} of player usernames to their {@link Set} of {@link GroundItem}s
-	 *
-	 * @return The map.
-	 */
-	public Map<Long, Set<GroundItem>> getGroundItems() {
-		return groundItems;
 	}
 
 	/**
@@ -223,7 +201,7 @@ public final class World {
 	 * system.
 	 *
 	 * @param release The release number.
-	 * @param cache The file system.
+	 * @param cache   The file system.
 	 * @param manager The plugin manager. TODO move this.
 	 * @throws Exception If there was a failure when loading plugins.
 	 */
@@ -248,7 +226,7 @@ public final class World {
 		secondStageDecoder.block();
 
 		// Build collision matrices for the first time
-		collisionManager.build(false);
+//		collisionManager.build(false);
 		regions.addRegionListener(new CollisionUpdateListener(collisionManager));
 
 		npcMovement = new NpcMovementTask(collisionManager); // Must be exactly here because of ordering issues.
@@ -273,11 +251,21 @@ public final class World {
 	 * Adds an {@link EventListener}, listening for an {@link Event} of the
 	 * specified type.
 	 *
-	 * @param type The type of the Event.
+	 * @param type     The type of the Event.
 	 * @param listener The EventListener.
 	 */
 	public <E extends Event> void listenFor(Class<E> type, EventListener<E> listener) {
 		events.putListener(type, listener);
+	}
+
+	/**
+	 * Adds entities to regions in the {@link RegionRepository}. By default, we
+	 * do not notify listeners.
+	 *
+	 * @param entities The entities.
+	 */
+	private void placeEntities(Entity... entities) {
+		Arrays.stream(entities).forEach(entity -> regions.fromPosition(entity.getPosition()).addEntity(entity, false));
 	}
 
 	/**
@@ -287,6 +275,41 @@ public final class World {
 		unregisterNpcs();
 		registerNpcs();
 		scheduler.pulse();
+	}
+
+	/**
+	 * Unregisters all of the {@link Npc}s in the {@link #oldNpcs queue}.
+	 */
+	private void unregisterNpcs() {
+		while (!oldNpcs.isEmpty()) {
+			Npc npc = oldNpcs.poll();
+
+			Region region = regions.fromPosition(npc.getPosition());
+			region.removeEntity(npc);
+
+			npcRepository.remove(npc);
+		}
+	}
+
+	/**
+	 * Registers all of the {@link Npc}s in the {@link #queuedNpcs queue}.
+	 */
+	private void registerNpcs() {
+		while (!queuedNpcs.isEmpty()) {
+			Npc npc = queuedNpcs.poll();
+			boolean success = npcRepository.add(npc);
+
+			if (success) {
+				Region region = regions.fromPosition(npc.getPosition());
+				region.addEntity(npc);
+
+				if (npc.hasBoundaries()) {
+					npcMovement.addNpc(npc);
+				}
+			} else {
+				logger.warning("Failed to register npc (capacity reached): [count=" + npcRepository.size() + "]");
+			}
+		}
 	}
 
 	/**
@@ -373,48 +396,27 @@ public final class World {
 	}
 
 	/**
-	 * Adds entities to regions in the {@link RegionRepository}. By default, we
-	 * do not notify listeners.
+	 * Represents the different status codes for registering a player.
 	 *
-	 * @param entities The entities.
+	 * @author Graham
 	 */
-	private void placeEntities(Entity... entities) {
-		Arrays.stream(entities).forEach(entity -> regions.fromPosition(entity.getPosition()).addEntity(entity, false));
-	}
+	public enum RegistrationStatus {
 
-	/**
-	 * Registers all of the {@link Npc}s in the {@link #queuedNpcs queue}.
-	 */
-	private void registerNpcs() {
-		while (!queuedNpcs.isEmpty()) {
-			Npc npc = queuedNpcs.poll();
-			boolean success = npcRepository.add(npc);
+		/**
+		 * Indicates that the player is already online.
+		 */
+		ALREADY_ONLINE,
 
-			if (success) {
-				Region region = regions.fromPosition(npc.getPosition());
-				region.addEntity(npc);
+		/**
+		 * Indicates that the player was registered successfully.
+		 */
+		OK,
 
-				if (npc.hasBoundaries()) {
-					npcMovement.addNpc(npc);
-				}
-			} else {
-				logger.warning("Failed to register npc (capacity reached): [count=" + npcRepository.size() + "]");
-			}
-		}
-	}
+		/**
+		 * Indicates the world is full.
+		 */
+		WORLD_FULL;
 
-	/**
-	 * Unregisters all of the {@link Npc}s in the {@link #oldNpcs queue}.
-	 */
-	private void unregisterNpcs() {
-		while (!oldNpcs.isEmpty()) {
-			Npc npc = oldNpcs.poll();
-
-			Region region = regions.fromPosition(npc.getPosition());
-			region.removeEntity(npc);
-
-			npcRepository.remove(npc);
-		}
 	}
 
 }

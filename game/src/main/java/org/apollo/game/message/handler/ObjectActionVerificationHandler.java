@@ -1,8 +1,5 @@
 package org.apollo.game.message.handler;
 
-import java.util.List;
-import java.util.Set;
-
 import org.apollo.cache.def.ObjectDefinition;
 import org.apollo.game.message.impl.ObjectActionMessage;
 import org.apollo.game.model.Position;
@@ -11,6 +8,9 @@ import org.apollo.game.model.area.Region;
 import org.apollo.game.model.entity.EntityType;
 import org.apollo.game.model.entity.Player;
 import org.apollo.game.model.entity.obj.GameObject;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * A verification {@link MessageHandler} for the {@link ObjectActionMessage}.
@@ -51,7 +51,7 @@ public final class ObjectActionVerificationHandler extends MessageHandler<Object
 		Region region = world.getRegionRepository().fromPosition(position);
 		Set<GameObject> objects = region.getEntities(position, EntityType.STATIC_OBJECT, EntityType.DYNAMIC_OBJECT);
 
-		if (!player.getPosition().isWithinDistance(position, 15) || !containsObject(id, objects)) {
+		if (!player.getPosition().isWithinDistance(position, 20) || !containsObject(id, objects)) {
 			message.terminate();
 			return;
 		}

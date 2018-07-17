@@ -1,25 +1,23 @@
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.selects.select
+
 import org.apollo.game.action.ActionBlock
 import org.apollo.game.action.AsyncDistancedAction
-import org.apollo.game.action.DistancedAction
 import org.apollo.game.message.impl.ObjectActionMessage
 import org.apollo.game.model.Animation
 import org.apollo.game.model.Position
-import org.apollo.game.model.entity.*
+import org.apollo.game.model.entity.Player
+import org.apollo.game.model.entity.Skill
 import org.apollo.net.message.Message
 
 /**
  * A list of [ObjectDefinition] identifiers which are training dummies.
  */
-val DUMMY_IDS = setOf<Int>(823)
+val DUMMY_IDS = setOf(1764)
 
 on { ObjectActionMessage::class }
-        .where { option == 2 && id in DUMMY_IDS }
+        .where { option == 1 && id in DUMMY_IDS }
         .then { DummyAction.start(this, it, position) }
 
-class DummyAction(val player: Player, position: Position) : AsyncDistancedAction<Player>(0, true, player, position, DISTANCE) {
+class DummyAction(val player: Player, position: Position) : AsyncDistancedAction<Player>(0, false, player, position, DISTANCE) {
 
     companion object {
 

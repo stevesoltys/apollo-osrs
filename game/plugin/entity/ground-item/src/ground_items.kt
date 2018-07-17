@@ -1,5 +1,3 @@
-import org.apollo.game.message.impl.RemoveTileItemMessage
-import org.apollo.game.message.impl.SendTileItemMessage
 import org.apollo.game.model.Item
 import org.apollo.game.model.Position
 import org.apollo.game.model.World
@@ -10,35 +8,28 @@ import org.apollo.game.model.entity.Player
  * Spawns a new local [GroundItem] for this Player at the specified [Position].
  */
 fun Player.addGroundItem(item: Item, position: Position) {
-    world.addGroundItem(this, GroundItem.dropped(world, position, item, this))
+    world.addGroundItem(world, GroundItem.dropped(world, position, item, this))
 }
 
-internal fun World.addGroundItem(player: Player, item: GroundItem) {
+internal fun World.globalizeGroundItem(item: GroundItem) {
     val region = regionRepository.fromPosition(item.position)
 
-    if (item.isGlobal) {
-        region.addEntity(item, true)
-        return
-    }
+    region.removeEntity(item)
+    item.globalize()
+    region.addEntity(item, true)
+}
 
-    groundItems.computeIfAbsent(player.encodedName, { HashSet<GroundItem>() }) += item
+internal fun World.addGroundItem(world: World, item: GroundItem) {
+    world.groundItems.add(item)
+    item.index = world.groundItems.indexOf(item)
 
-    val offset = region.getPositionOffset(item)
-    player.send(SendTileItemMessage(item.item, offset))
-
+    val region = regionRepository.fromPosition(item.position)
+    region.addEntity(item, true)
     schedule(GroundItemSynchronizationTask(item))
 }
 
-internal fun World.removeGroundItem(player: Player, item: GroundItem) {
-    val region = regionRepository.fromPosition(item.position)
+internal fun World.removeGroundItem(world: World, item: GroundItem) {
+    world.groundItems.remove(item)
 
-    if (item.isGlobal) {
-        region.removeEntity(item)
-    }
-
-    val items = groundItems[player.encodedName] ?: return
-    items -= item
-
-    val offset = region.getPositionOffset(item)
-    player.send(RemoveTileItemMessage(item.item, offset))
+    regionRepository.fromPosition(item.position).removeEntity(item)
 }

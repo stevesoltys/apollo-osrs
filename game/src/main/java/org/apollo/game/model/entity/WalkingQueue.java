@@ -5,16 +5,12 @@ import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 import org.apollo.game.model.area.Region;
 import org.apollo.game.model.area.RegionRepository;
-import org.apollo.game.model.area.collision.CollisionFlag;
 import org.apollo.game.model.area.collision.CollisionManager;
-import org.apollo.game.model.area.collision.CollisionMatrix;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Queue;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * A queue of {@link Direction}s which a {@link Mob} will follow.
@@ -50,6 +46,24 @@ public final class WalkingQueue {
 	 */
 	public WalkingQueue(Mob mob) {
 		this.mob = mob;
+	}
+
+	/**
+	 * Adds an array of steps to this WalkingQueue, clearing the current steps.
+	 *
+	 * @param steps The steps to add.
+	 */
+	public void addSteps(Collection<Position> steps) {
+		int index = 0;
+
+		for(Position step : steps) {
+			if (index++ == 0) {
+				addFirstStep(step);
+
+			} else {
+				addStep(step);
+			}
+		}
 	}
 
 	/**

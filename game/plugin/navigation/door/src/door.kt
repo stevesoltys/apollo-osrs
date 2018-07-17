@@ -10,7 +10,7 @@ import org.apollo.game.model.entity.obj.GameObject
 import org.apollo.game.model.event.PlayerEvent
 import org.apollo.game.plugin.api.findObject
 import org.apollo.net.message.Message
-import java.util.Objects
+import java.util.*
 
 enum class DoorType {
     LEFT, RIGHT, NOT_SUPPORTED
@@ -38,7 +38,7 @@ class Door(private val gameObject: GameObject) {
 
         val LEFT_HINGED = setOf(1516, 1536, 1533)
 
-        val RIGHT_HINGED = setOf(1519, 1530, 4465, 4467, 3014, 3017, 3018, 3019)
+        val RIGHT_HINGED = setOf(1519, 1530, 4465, 4467, 3014, 3017, 3018, 3019, 11775)
 
         /**
          * Find a given door in the world

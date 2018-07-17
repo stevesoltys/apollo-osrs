@@ -1,5 +1,6 @@
 package org.apollo.game.message.impl;
 
+import org.apollo.game.model.entity.Player;
 import org.apollo.game.model.entity.Projectile;
 import org.apollo.net.message.Message;
 
@@ -70,5 +71,10 @@ public final class SendProjectileMessage extends RegionUpdateMessage {
 	@Override
 	public int priority() {
 		return LOW_PRIORITY;
+	}
+
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
 	}
 }

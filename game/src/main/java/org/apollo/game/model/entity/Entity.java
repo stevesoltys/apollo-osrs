@@ -11,19 +11,18 @@ import org.apollo.game.model.World;
 public abstract class Entity {
 
 	/**
+	 * The World containing this Entity.
+	 */
+	protected final World world;
+	/**
 	 * The Position of this Entity.
 	 */
 	protected Position position;
 
 	/**
-	 * The World containing this Entity.
-	 */
-	protected final World world;
-
-	/**
 	 * Creates the Entity.
 	 *
-	 * @param world The {@link World} containing the Entity.
+	 * @param world    The {@link World} containing the Entity.
 	 * @param position The {@link Position} of the Entity.
 	 */
 	public Entity(World world, Position position) {
@@ -62,4 +61,11 @@ public abstract class Entity {
 	@Override
 	public abstract int hashCode();
 
+	/**
+	 * Returns a flag indicating whether or not this Entity is visible to the player.
+	 *
+	 * @param player The player.
+	 * @return The visibility flag.
+	 */
+	public abstract boolean visibleTo(Player player);
 }

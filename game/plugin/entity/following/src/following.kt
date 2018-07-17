@@ -3,7 +3,6 @@ package org.apollo.plugin.entity.following
 import org.apollo.game.action.Action
 import org.apollo.game.model.Direction
 import org.apollo.game.model.Position
-import org.apollo.game.model.entity.Mob
 import org.apollo.game.model.entity.Player
 import org.apollo.net.message.Message
 import org.apollo.plugin.entity.walkto.walkBehind
@@ -41,7 +40,7 @@ class FollowAction(player: Player, val target: Player) : Action<Player>(0, true,
             val directions = Direction.NESW
             val directionOffset = (Math.random() * directions.size).toInt()
 
-            mob.walkTo(target.position.step(1, directions[directionOffset]))
+            mob.walkTo(target.position.step(1, directions[directionOffset]), smart = true)
             return
         }
 

@@ -1,20 +1,22 @@
 package org.apollo.game.model.area.collision;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apollo.cache.def.ObjectDefinition;
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.area.Region;
+import org.apollo.game.model.area.RegionCoordinates;
 import org.apollo.game.model.area.RegionRepository;
 import org.apollo.game.model.area.collision.CollisionUpdate.DirectionFlag;
 import org.apollo.game.model.entity.EntityType;
 import org.apollo.game.model.entity.obj.GameObject;
 
 import java.util.Collection;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Set;
 
 import static org.apollo.game.model.entity.EntityType.DYNAMIC_OBJECT;
 import static org.apollo.game.model.entity.EntityType.STATIC_OBJECT;
@@ -26,25 +28,24 @@ import static org.apollo.game.model.entity.EntityType.STATIC_OBJECT;
 public final class CollisionManager {
 
 	/**
-	 * A comparator that sorts {@link Position}s by their X coordinate, then Y, then height.
+	 * A {@code HashMultimap} of regions mapped to positions where the tile is completely blocked.
 	 */
-	private static final Comparator<Position> POSITION_COMPARATOR =
-		Comparator.comparingInt(Position::getX).thenComparingInt(Position::getY).thenComparingInt(Position::getHeight);
+	private final Multimap<RegionCoordinates, Position> blocked = HashMultimap.create();
 
 	/**
-	 * A {@code SortedSet} of positions where the tile is part of a bridged structure.
+	 * A {@code HashMultimap} of regions mapped to positions where the tile is part of a bridge.
 	 */
-	private final SortedSet<Position> bridges = new TreeSet<>(POSITION_COMPARATOR);
-
-	/**
-	 * A {@code SortedSet} of positions where the tile is completely blocked.
-	 */
-	private final SortedSet<Position> blocked = new TreeSet<>(POSITION_COMPARATOR);
+	private final Multimap<RegionCoordinates, Position> bridges = HashMultimap.create();
 
 	/**
 	 * The {@link RegionRepository} used to lookup {@link CollisionMatrix} objects.
 	 */
 	private final RegionRepository regions;
+
+	/**
+	 * The set of regions that have had their collision flags initialized.
+	 */
+	private final Set<Region> initializedRegions = new HashSet<>();
 
 	/**
 	 * Creates the {@code CollisionManager}.
@@ -53,6 +54,53 @@ public final class CollisionManager {
 	 */
 	public CollisionManager(RegionRepository regions) {
 		this.regions = regions;
+	}
+
+	/**
+	 * Applies the initial {@link CollisionUpdate} to the {@link CollisionMatrix}es for all objects and tiles loaded
+	 * from the cache within the specified region.
+	 *
+	 * @param buildRegion The region to build collision flags for.
+	 */
+	public void build(Region buildRegion) {
+
+		if (initializedRegions.contains(buildRegion)) {
+			return;
+		}
+
+		CollisionUpdate.Builder builder = new CollisionUpdate.Builder();
+		builder.type(CollisionUpdateType.ADDING);
+
+		Collection<Position> regionBridges = bridges.get(buildRegion.getCoordinates());
+		Collection<Position> regionTiles = blocked.get(buildRegion.getCoordinates());
+
+		regionTiles.forEach(tile -> {
+			int x = tile.getX(), y = tile.getY();
+			int height = tile.getHeight();
+
+			if (regionBridges.contains(new Position(x, y, 1))) {
+				height--;
+			}
+
+			if (height >= 0) {
+				builder.tile(new Position(x, y, height), false, Direction.NESW);
+			}
+		});
+
+		apply(builder.build());
+
+		CollisionUpdate.Builder objects = new CollisionUpdate.Builder();
+		objects.type(CollisionUpdateType.ADDING);
+
+		buildRegion.getEntities(STATIC_OBJECT, DYNAMIC_OBJECT).forEach(entity -> {
+
+			if (((GameObject) entity).getId() < ObjectDefinition.count()) {
+				objects.object((GameObject) entity);
+			}
+		});
+		apply(objects.build());
+
+		initializedRegions.add(buildRegion);
 	}
 
 	/**
@@ -68,37 +116,12 @@ public final class CollisionManager {
 					matrix.reset();
 				}
 			}
+
+			initializedRegions.clear();
 		}
-
-		CollisionUpdate.Builder builder = new CollisionUpdate.Builder();
-		builder.type(CollisionUpdateType.ADDING);
-
-		for (Position tile : new TreeSet<>(blocked)) {
-			int x = tile.getX(), y = tile.getY();
-			int height = tile.getHeight();
-
-			if (bridges.contains(new Position(x, y, 1))) {
-				height--;
-			}
-
-			if (height >= 0) {
-//				builder.tile(new Position(x, y, height), false, Direction.NESW);
-			}
-		}
-
-		apply(builder.build());
 
 		for (Region region : regions.getRegions()) {
-			CollisionUpdate.Builder objects = new CollisionUpdate.Builder();
-			objects.type(CollisionUpdateType.ADDING);
-
-			region.getEntities(STATIC_OBJECT, DYNAMIC_OBJECT).forEach(entity -> {
-
-				if(((GameObject) entity).getId() < ObjectDefinition.count()) {
-					objects.object((GameObject) entity);
-				}
-			});
-			apply(objects.build());
+			build(region);
 		}
 	}
 
@@ -117,7 +140,11 @@ public final class CollisionManager {
 			Position position = entry.getKey();
 
 			int height = position.getHeight();
-			if (bridges.contains(new Position(position.getX(), position.getY(), 1))) {
+
+			Position bridgePosition = new Position(position.getX(), position.getY(), 1);
+
+			if (bridges.containsKey(bridgePosition) &&
+				bridges.get(bridgePosition.getRegionCoordinates()).contains(bridgePosition)) {
 				if (--height < 0) {
 					continue;
 				}
@@ -239,29 +266,12 @@ public final class CollisionManager {
 	}
 
 	/**
-	 * Apply a {@link CollisionUpdate} flag to a {@link CollisionMatrix}.
-	 *
-	 * @param type   The type of update to apply.
-	 * @param matrix The matrix the update is being applied to.
-	 * @param localX The local X position of the tile the flag represents.
-	 * @param localY The local Y position of the tile the flag represents.
-	 * @param flag   The {@link CollisionFlag} to update.
-	 */
-	private void flag(CollisionUpdateType type, CollisionMatrix matrix, int localX, int localY, CollisionFlag flag) {
-		if (type == CollisionUpdateType.ADDING) {
-			matrix.flag(localX, localY, flag);
-		} else {
-			matrix.clear(localX, localY, flag);
-		}
-	}
-
-	/**
 	 * Marks a tile as completely untraversable from all directions.
 	 *
 	 * @param position The {@link Position} of the tile.
 	 */
 	public void block(Position position) {
-		blocked.add(position);
+		blocked.put(position.getRegionCoordinates(), position);
 	}
 
 	/**
@@ -270,7 +280,7 @@ public final class CollisionManager {
 	 * @param position The {@link Position} of the tile.
 	 */
 	public void markBridged(Position position) {
-		bridges.add(position);
+		bridges.put(position.getRegionCoordinates(), position);
 	}
 
 	/**
@@ -305,6 +315,23 @@ public final class CollisionManager {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Apply a {@link CollisionUpdate} flag to a {@link CollisionMatrix}.
+	 *
+	 * @param type   The type of update to apply.
+	 * @param matrix The matrix the update is being applied to.
+	 * @param localX The local X position of the tile the flag represents.
+	 * @param localY The local Y position of the tile the flag represents.
+	 * @param flag   The {@link CollisionFlag} to update.
+	 */
+	private void flag(CollisionUpdateType type, CollisionMatrix matrix, int localX, int localY, CollisionFlag flag) {
+		if (type == CollisionUpdateType.ADDING) {
+			matrix.flag(localX, localY, flag);
+		} else {
+			matrix.clear(localX, localY, flag);
+		}
 	}
 
 }
