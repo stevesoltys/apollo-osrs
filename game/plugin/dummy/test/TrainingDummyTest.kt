@@ -1,6 +1,7 @@
+
 import org.apollo.game.model.Position
 import org.apollo.game.model.entity.Skill
-import org.apollo.game.plugin.testing.*
+import org.apollo.game.plugin.testing.KotlinPluginTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.mockito.Mockito.contains
@@ -9,7 +10,7 @@ import org.mockito.Mockito.verify
 class TrainingDummyTest : KotlinPluginTest() {
 
     companion object {
-        const val DUMMY_ID = 823
+        const val DUMMY_ID = 1764
         val DUMMY_POSITION = Position(3200, 3230, 0)
     }
 
@@ -18,7 +19,7 @@ class TrainingDummyTest : KotlinPluginTest() {
         val skills = player.skillSet
         val beforeExp = skills.getExperience(Skill.ATTACK)
 
-        player.interactWith(dummy, option = 2)
+        player.interactWith(dummy, option = 1)
         player.waitForActionCompletion()
 
         val afterExp = skills.getExperience(Skill.ATTACK)
@@ -31,7 +32,7 @@ class TrainingDummyTest : KotlinPluginTest() {
         skills.setMaximumLevel(Skill.ATTACK, 8)
         val beforeExp = skills.getExperience(Skill.ATTACK)
 
-        player.interactWith(dummy, option = 2)
+        player.interactWith(dummy, option = 1)
         player.waitForActionCompletion()
 
         val afterExp = skills.getExperience(Skill.ATTACK)

@@ -45,6 +45,11 @@ public abstract class DistancedAction<T extends Mob> extends Action<T> {
 	private boolean reached;
 
 	/**
+	 * A flag indicating whether or not the path has been calculated.
+	 */
+	private boolean calculatedPath;
+
+	/**
 	 * Creates a new DistancedAction.
 	 *
 	 * @param delay     The delay between executions once the distance threshold is reached.
@@ -59,12 +64,11 @@ public abstract class DistancedAction<T extends Mob> extends Action<T> {
 		this.distance = distance;
 		this.delay = delay;
 		this.immediate = immediate;
-
-		calculatePath();
 	}
 
 	@Override
 	public final void execute() {
+
 		if (reached) { // Don't check again in case the player has moved away since it was reached
 			executeAction();
 
@@ -74,6 +78,8 @@ public abstract class DistancedAction<T extends Mob> extends Action<T> {
 			if (immediate) {
 				executeAction();
 			}
+		} else if (!calculatedPath) {
+			calculatePath();
 		}
 	}
 
@@ -97,9 +103,9 @@ public abstract class DistancedAction<T extends Mob> extends Action<T> {
 					Position currentPosition = position.step(distance, direction);
 					Deque<Position> currentPath = pathfindingAlgorithm.find(player.getPosition(), currentPosition);
 
-						if (!currentPath.isEmpty() && currentPath.size() <= bestPath.size()) {
+					if (!currentPath.isEmpty() && currentPath.size() <= bestPath.size()) {
 
-						if(currentPath.size() == bestPath.size() && bestPosition == position) {
+						if (currentPath.size() == bestPath.size() && bestPosition == position) {
 							continue;
 						}
 
@@ -114,5 +120,7 @@ public abstract class DistancedAction<T extends Mob> extends Action<T> {
 		}
 
 		// TODO: NPC distanced actions
+
+		calculatedPath = true;
 	}
 }
