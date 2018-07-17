@@ -30,7 +30,7 @@ public final class LoginEncoder extends MessageToByteEncoder<LoginResponse> {
 			out.writeByte(response.getRights());
 			out.writeBoolean(false);
 
-			out.writeShort(1); //response.getIndex());
+			out.writeShort(response.getIndex());
 			out.writeByte(0);
 		}
 	}

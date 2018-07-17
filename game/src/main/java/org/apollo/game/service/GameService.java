@@ -1,14 +1,5 @@
 package org.apollo.game.service;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apollo.Service;
 import org.apollo.game.GameConstants;
 import org.apollo.game.GamePulseHandler;
@@ -26,6 +17,15 @@ import org.apollo.util.ThreadUtil;
 import org.apollo.util.xml.XmlNode;
 import org.apollo.util.xml.XmlParser;
 import org.xml.sax.SAXException;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The {@link GameService} class schedules and manages the execution of the {@link GamePulseHandler} class.
@@ -120,7 +120,6 @@ public final class GameService extends Service {
 	 * @param player The player.
 	 */
 	public synchronized void finalizePlayerRegistration(Player player) {
-		world.register(player);
 		Region region = world.getRegionRepository().fromPosition(player.getPosition());
 		region.addEntity(player);
 
@@ -218,6 +217,7 @@ public final class GameService extends Service {
 			} else if (world.getPlayerRepository().full()) {
 				request.session.sendLoginFailure(LoginConstants.STATUS_SERVER_FULL);
 			} else {
+				world.register(player);
 				request.session.sendLoginSuccess(player);
 				finalizePlayerRegistration(player);
 			}
