@@ -1,6 +1,7 @@
 package org.apollo.game.message.handler;
 
 import org.apollo.cache.def.EquipmentDefinition;
+import org.apollo.game.message.impl.EquipItemMessage;
 import org.apollo.game.message.impl.ItemOptionMessage;
 import org.apollo.game.model.Item;
 import org.apollo.game.model.World;
@@ -21,12 +22,7 @@ import static org.apollo.game.model.inv.SynchronizationInventoryListener.INVENTO
  * @author Graham
  * @author Ryley
  */
-public final class EquipItemHandler extends MessageHandler<ItemOptionMessage> {
-
-	/**
-	 * The option used when equipping an item.
-	 */
-	private static final int EQUIP_OPTION = 2;
+public final class EquipItemHandler extends MessageHandler<EquipItemMessage> {
 
 	/**
 	 * Creates the EquipItemHandler.
@@ -38,8 +34,8 @@ public final class EquipItemHandler extends MessageHandler<ItemOptionMessage> {
 	}
 
 	@Override
-	public void handle(Player player, ItemOptionMessage message) {
-		if (message.getInterfaceId() != INVENTORY_ID || message.getOption() != EQUIP_OPTION) {
+	public void handle(Player player, EquipItemMessage message) {
+		if (message.getInterfaceId() != INVENTORY_ID) {
 			return;
 		}
 
@@ -109,7 +105,7 @@ public final class EquipItemHandler extends MessageHandler<ItemOptionMessage> {
 	 * @param player The {@link Player} equipping the item.
 	 * @param message The {@link ItemOptionMessage} sent by the client.
 	 */
-	private void handleTwoHanded(Inventory inventory, Inventory equipment, int inventorySlot, Item weapon, Item shield, Player player, ItemOptionMessage message) {
+	private void handleTwoHanded(Inventory inventory, Inventory equipment, int inventorySlot, Item weapon, Item shield, Player player, EquipItemMessage message) {
 		int slotsRequired = weapon != null && shield != null ? 1 : 0;
 
 		if (inventory.freeSlots() < slotsRequired) {
@@ -120,7 +116,7 @@ public final class EquipItemHandler extends MessageHandler<ItemOptionMessage> {
 
 		equipment.reset(SHIELD);
 		equipment.set(WEAPON, inventory.reset(inventorySlot));
-		
+
 		if (shield != null) {
 			inventory.add(shield);
 		}

@@ -134,7 +134,9 @@ public class Release83 extends Release {
 		register(235, new CommandMessageDecoder());
 
 		ItemOptionMessageDecoder itemOptionMessageDecoder = new ItemOptionMessageDecoder();
-		register(32, itemOptionMessageDecoder);
+		register(198, itemOptionMessageDecoder);
+
+		register(32, new EquipItemMessageDecoder());
 
 		register(183, new DropItemMessageDecoder());
 		register(5, new TakeTileItemMessageDecoder());

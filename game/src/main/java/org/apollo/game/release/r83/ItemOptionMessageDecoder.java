@@ -1,24 +1,27 @@
 package org.apollo.game.release.r83;
 
 import org.apollo.game.message.impl.ItemOptionMessage;
-import org.apollo.net.codec.game.*;
+import org.apollo.net.codec.game.DataTransformation;
+import org.apollo.net.codec.game.DataType;
+import org.apollo.net.codec.game.GamePacket;
+import org.apollo.net.codec.game.GamePacketReader;
 import org.apollo.net.release.MessageDecoder;
 
 /**
  * @author Steve Soltys
  */
 public class ItemOptionMessageDecoder extends MessageDecoder<ItemOptionMessage> {
+
 	@Override
 	public ItemOptionMessage decode(GamePacket packet) {
 		GamePacketReader reader = new GamePacketReader(packet);
 
-		if (packet.getOpcode() == 32) {
-			int hash = (int) reader.getSigned(DataType.INT);
-			int interfaceId = hash >> 16;
-			int itemId = (int) reader.getSigned(DataType.SHORT, DataOrder.LITTLE, DataTransformation.ADD);
-			int slot = (int) reader.getUnsigned(DataType.SHORT, DataOrder.LITTLE);
+		if (packet.getOpcode() == 198) {
+			int itemId = (int) reader.getSigned(DataType.SHORT, DataTransformation.ADD);
+			int interfaceId = (int) reader.getSigned(DataType.INT);
+			int slot = (int) reader.getSigned(DataType.SHORT);
 
-			return new ItemOptionMessage(2, interfaceId, itemId, slot);
+			return new ItemOptionMessage(1, interfaceId, itemId, slot);
 		}
 
 //        if (packet.getOpcode() == 124) {

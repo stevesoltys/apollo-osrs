@@ -58,6 +58,12 @@
         <type>org.apollo.game.message.impl.ItemOptionMessage</type>
         <chain>
             <handler>org.apollo.game.message.handler.ItemVerificationHandler</handler>
+        </chain>
+    </message>
+    <message>
+        <type>org.apollo.game.message.impl.EquipItemMessage</type>
+        <chain>
+            <handler>org.apollo.game.message.handler.ItemVerificationHandler</handler>
             <handler>org.apollo.game.message.handler.EquipItemHandler</handler>
         </chain>
     </message>
