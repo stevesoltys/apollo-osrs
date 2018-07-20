@@ -1,0 +1,5 @@
+plugin {
+    name = "pathfinding"
+    authors = ["Steve Soltys"]
+    dependencies = ["entity:walk-to"]
+}

@@ -9,7 +9,7 @@ import org.apollo.game.plugin.api.fishing
 import org.apollo.game.plugin.api.rand
 import org.apollo.game.plugin.skills.fishing.FishingSpot
 import org.apollo.game.plugin.skills.fishing.FishingTool
-import java.util.Objects
+import java.util.*
 
 // TODO: moving fishing spots, seaweed and caskets, evil bob
 
@@ -28,7 +28,7 @@ on { NpcActionMessage::class }
         terminate()
     }
 
-class FishingAction(player: Player, position: Position, val option: FishingSpot.Option) :
+class FishingAction(player: Player, val position: Position, val option: FishingSpot.Option) :
     AsyncDistancedAction<Player>(0, true, player, position, SPOT_DISTANCE) {
 
     /**
@@ -97,10 +97,10 @@ class FishingAction(player: Player, position: Position, val option: FishingSpot.
         if (javaClass != other?.javaClass) return false
 
         other as FishingAction
-        return option == other.option && position == other.position && mob == other.mob
+        return option == other.option && positions == other.positions && mob == other.mob
     }
 
-    override fun hashCode(): Int = Objects.hash(option, position, mob)
+    override fun hashCode(): Int = Objects.hash(option, positions, mob)
 
     private companion object {
         private const val SPOT_DISTANCE = 1

@@ -1,3 +1,4 @@
+
 import org.apollo.game.action.ActionBlock
 import org.apollo.game.action.AsyncDistancedAction
 import org.apollo.game.message.impl.ObjectActionMessage
@@ -5,15 +6,11 @@ import org.apollo.game.model.Position
 import org.apollo.game.model.World
 import org.apollo.game.model.entity.Player
 import org.apollo.game.model.entity.obj.GameObject
-import org.apollo.game.plugin.api.Definitions
-import org.apollo.game.plugin.api.expireObject
-import org.apollo.game.plugin.api.findObject
-import org.apollo.game.plugin.api.mining
-import org.apollo.game.plugin.api.rand
+import org.apollo.game.plugin.api.*
 import org.apollo.game.plugin.skills.mining.Ore
 import org.apollo.game.plugin.skills.mining.Pickaxe
 import org.apollo.net.message.Message
-import java.util.Objects
+import java.util.*
 
 on { ObjectActionMessage::class }
     .where { option == Actions.MINING }
@@ -65,7 +62,7 @@ class MiningAction(
     }
 
     override fun action(): ActionBlock = {
-        mob.turnTo(position)
+        mob.turnTo(target.position)
 
         val level = mob.mining.current
         if (level < target.ore.level) {
