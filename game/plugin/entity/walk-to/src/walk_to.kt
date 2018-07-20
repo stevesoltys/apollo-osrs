@@ -2,14 +2,12 @@ package org.apollo.plugin.entity.walkto
 
 import org.apollo.game.model.Direction
 import org.apollo.game.model.Position
-import org.apollo.game.model.entity.Entity
-import org.apollo.game.model.entity.Mob
-import org.apollo.game.model.entity.Npc
-import org.apollo.game.model.entity.Player
+import org.apollo.game.model.entity.*
 import org.apollo.game.model.entity.obj.GameObject
 import org.apollo.game.model.entity.path.AStarPathfindingAlgorithm
 import org.apollo.game.model.entity.path.EuclideanHeuristic
 import org.apollo.game.model.entity.path.SimplePathfindingAlgorithm
+import java.util.*
 
 private fun bounds(target: Entity): Pair<Int, Int> = when (target) {
     is GameObject -> {
@@ -57,11 +55,51 @@ fun Mob.walkTo(target: Position, positionPredicate: ((Position) -> Boolean)? = n
         SimplePathfindingAlgorithm(world.collisionManager)
     }
 
-    val path = pathfinder.find(position, target)
+    followPath(pathfinder.find(position, target), positionPredicate)
+}
 
-    if (positionPredicate == null) {
-        path.forEach(walkingQueue::addStep)
+fun Mob.walkToClosest(targets: Set<Position>, positionPredicate: ((Position) -> Boolean)? = null,
+                      smart: Boolean = false) {
+    if(targets.contains(position)) {
+        return
+    }
+
+    val pathfinder = if (smart) {
+        AStarPathfindingAlgorithm(world.collisionManager, EuclideanHeuristic())
     } else {
+        SimplePathfindingAlgorithm(world.collisionManager)
+    }
+
+    var bestPath: Deque<Position>? = null
+
+    targets.forEach { target ->
+        val currentPath = pathfinder.find(position, target)
+
+        if (currentPath.isNotEmpty() && (bestPath == null || (bestPath!!.size > currentPath.size))) {
+            bestPath = currentPath
+        }
+    }
+
+    if(bestPath != null) {
+        followPath(bestPath!!, positionPredicate)
+    }
+}
+
+private fun Mob.followPath(path: Deque<Position>, positionPredicate: ((Position) -> Boolean)? = null) {
+    if (positionPredicate == null) {
+        walkingQueue.addSteps(path)
+
+        if (entityType == EntityType.PLAYER) {
+            walkingQueue.isRunning = (this as Player).isRunning
+        }
+
+    } else {
+        walkingQueue.clear()
+
+        if (entityType == EntityType.PLAYER) {
+            walkingQueue.isRunning = (this as Player).isRunning
+        }
+
         for (step in path) {
             if (!positionPredicate.invoke(step)) {
                 return

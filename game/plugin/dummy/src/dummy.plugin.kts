@@ -17,7 +17,8 @@ on { ObjectActionMessage::class }
         .where { option == 1 && id in DUMMY_IDS }
         .then { DummyAction.start(this, it, position) }
 
-class DummyAction(val player: Player, position: Position) : AsyncDistancedAction<Player>(0, false, player, position, DISTANCE) {
+class DummyAction(val player: Player, val position: Position) :
+        AsyncDistancedAction<Player>(0, false, player, position, DISTANCE) {
 
     companion object {
 

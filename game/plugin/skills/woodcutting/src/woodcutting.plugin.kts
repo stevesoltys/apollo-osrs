@@ -71,7 +71,7 @@ class WoodcuttingAction(
     }
 
     override fun action(): ActionBlock = {
-        mob.turnTo(position)
+        mob.turnTo(target.position)
 
         val level = mob.woodcutting.current
         if (level < target.tree.level) {

@@ -1,3 +1,4 @@
+
 import org.apollo.game.action.ActionBlock
 import org.apollo.game.action.AsyncDistancedAction
 import org.apollo.game.action.DistancedAction
@@ -7,11 +8,11 @@ import org.apollo.game.model.entity.Player
 import org.apollo.game.plugin.api.Definitions
 import org.apollo.game.plugin.skills.mining.Ore
 import org.apollo.net.message.Message
-import java.util.Objects
+import java.util.*
 
 class ProspectingAction(
     player: Player,
-    position: Position,
+    val position: Position,
     private val ore: Ore
 ) : AsyncDistancedAction<Player>(DELAY, true, player, position, ORE_SIZE) {
 
@@ -47,10 +48,10 @@ class ProspectingAction(
         if (javaClass != other?.javaClass) return false
 
         other as ProspectingAction
-        return mob == other.mob && position == other.position && ore == other.ore
+        return mob == other.mob && positions == other.positions && ore == other.ore
     }
 
-    override fun hashCode(): Int = Objects.hash(mob, position, ore)
+    override fun hashCode(): Int = Objects.hash(mob, positions, ore)
 
 }
 
@@ -84,9 +85,9 @@ class ExpiredProspectingAction(
         if (javaClass != other?.javaClass) return false
 
         other as ExpiredProspectingAction
-        return mob == other.mob && position == other.position
+        return mob == other.mob && positions == other.positions
     }
 
-    override fun hashCode(): Int = Objects.hash(mob, position)
+    override fun hashCode(): Int = Objects.hash(mob, positions)
 
 }

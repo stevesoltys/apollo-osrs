@@ -40,7 +40,7 @@ class CreateTiaraAction(val player: Player, val position: Position, val tiara: T
     }
 }
 
-class RunecraftingAction(val player: Player, val rune: Rune, altar: Altar) : AsyncDistancedAction<Player>(0, true, player, altar.center, 3) {
+class RunecraftingAction(val player: Player, val rune: Rune, val altar: Altar) : AsyncDistancedAction<Player>(0, true, player, altar.center, 3) {
     override fun action(): ActionBlock = {
         if (player.runecraft.current < rune.level) {
             player.sendMessage("You need a runecrafting level of ${rune.level} to craft this rune.")
@@ -52,7 +52,7 @@ class RunecraftingAction(val player: Player, val rune: Rune, altar: Altar) : Asy
             stop()
         }
 
-        player.turnTo(position)
+        player.turnTo(altar.center)
         player.playAnimation(runecraftingAnimation)
         player.playGraphic(runecraftingGraphic)
 

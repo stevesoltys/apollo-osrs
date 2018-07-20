@@ -40,7 +40,8 @@ val BANKER_NPCS = setOf(166, 494, 495, 496, 497, 498, 499, 1036, 1360, 1702, 216
  *
  * @property position The [Position] of the booth/[Npc].
  */
-class BankAction(player: Player, position: Position) : DistancedAction<Player>(0, true, player, position, DISTANCE) {
+class BankAction(player: Player, val position: Position) :
+        DistancedAction<Player>(0, true, player, position, DISTANCE) {
 
     companion object {
 
@@ -66,11 +67,11 @@ class BankAction(player: Player, position: Position) : DistancedAction<Player>(0
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is BankAction && position == other.position
+        return other is BankAction && positions == other.positions
     }
 
     override fun hashCode(): Int {
-        return position.hashCode()
+        return positions.hashCode()
     }
 
 }
