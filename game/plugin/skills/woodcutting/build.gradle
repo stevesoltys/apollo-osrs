@@ -3,5 +3,5 @@ plugin {
     authors = [
         "tlf30"
     ]
-    dependencies = ["api"]
+    dependencies = ["api", ":entity:walk-to"]
 }

@@ -1,5 +1,4 @@
-
-import org.apollo.game.action.DistancedAction
+import org.apollo.game.action.EntityDistancedAction
 import org.apollo.game.message.impl.ObjectActionMessage
 import org.apollo.game.model.Position
 import org.apollo.game.model.entity.Player
@@ -20,17 +19,18 @@ on { ObjectActionMessage::class }
             }
         }
 
-class OpenDoorAction(private val player: Player, private val gameObject: GameObject, positions: Set<Position>) :
-        DistancedAction<Player>(0, false, player, positions, DISTANCE) {
+class OpenDoorAction(private val player: Player, private val gameObject: GameObject) :
+        EntityDistancedAction<Player>(0, false, player, gameObject) {
 
     companion object {
-        const val DISTANCE = 0
-
         fun start(message: Message, player: Player, gameObject: GameObject) {
-            val door = gameObject.getDoor()!!
-            player.walkToClosest(door.walkPositions(gameObject), smart = true)
+            val action = OpenDoorAction(player, gameObject)
 
-            player.startAction(OpenDoorAction(player, gameObject, door.walkPositions(gameObject)))
+            if (action.triggerPositions.stream().noneMatch { position -> player.position == position }) {
+                player.walkToClosest(action.triggerPositions, smart = true)
+            }
+
+            player.startAction(action)
             message.terminate()
         }
     }
@@ -57,9 +57,14 @@ class OpenDoorAction(private val player: Player, private val gameObject: GameObj
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is OpenDoorAction && positions == other.positions && player == other.player &&
-                gameObject == other.gameObject
+        return other is OpenDoorAction && player == other.player && gameObject == other.gameObject
     }
 
-    override fun hashCode(): Int = Objects.hash(positions, player, gameObject)
+    override fun hashCode(): Int = Objects.hash(player, gameObject)
+
+    override fun getTriggerPositions(): MutableSet<Position> {
+        val positions = objectTriggerPositions
+        positions.remove(gameObject.getDoor()!!.toggledPosition(gameObject))
+        return positions
+    }
 }
