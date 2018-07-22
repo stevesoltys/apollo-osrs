@@ -2,12 +2,15 @@ package org.apollo.game.model.entity;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 import org.apollo.game.model.area.EntityUpdateType;
 import org.apollo.game.model.area.Region;
 import org.apollo.game.model.area.update.GroupableEntity;
 import org.apollo.game.model.area.update.ProjectileUpdateOperation;
+
+import java.util.Set;
 
 /**
  * A projectile fired through the game world, such as an arrow.
@@ -206,6 +209,11 @@ public final class Projectile extends Entity implements GroupableEntity {
 	@Override
 	public boolean visibleTo(Player player) {
 		return true;
+	}
+
+	@Override
+	public Set<Position> getBounds() {
+		return ImmutableSet.of(position);
 	}
 
 	@Override

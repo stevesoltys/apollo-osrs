@@ -3,6 +3,8 @@ package org.apollo.game.model.entity;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 
+import java.util.Set;
+
 /**
  * Represents an in-game entity, such as a mob, object, projectile, etc.
  *
@@ -68,4 +70,11 @@ public abstract class Entity {
 	 * @return The visibility flag.
 	 */
 	public abstract boolean visibleTo(Player player);
+
+	/**
+	 * Returns the set of positions that this Entity occupies.
+	 *
+	 * @return The set of bounds.
+	 */
+	public abstract Set<Position> getBounds();
 }
