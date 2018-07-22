@@ -89,6 +89,16 @@ public final class GroundItem extends Entity implements GroupableEntity {
 		return EntityType.GROUND_ITEM;
 	}
 
+	@Override
+	public int getHeight() {
+		return 1;
+	}
+
+	@Override
+	public int getWidth() {
+		return 1;
+	}
+
 	/**
 	 * Gets the index.
 	 *

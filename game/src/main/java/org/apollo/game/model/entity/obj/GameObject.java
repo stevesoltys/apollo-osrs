@@ -4,6 +4,7 @@ import com.google.common.base.MoreObjects;
 import org.apollo.cache.def.ObjectDefinition;
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
+import org.apollo.game.model.Direction;
 import org.apollo.game.model.World;
 import org.apollo.game.model.area.EntityUpdateType;
 import org.apollo.game.model.area.Region;
@@ -88,6 +89,23 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 		return packed >> 2 & 0x3F;
 	}
 
+
+	@Override
+	public int getHeight() {
+		Direction direction = Direction.WNES[getOrientation()];
+
+		return direction == Direction.WEST || direction == Direction.EAST ?
+			getDefinition().getWidth() : getDefinition().getLength();
+	}
+
+	@Override
+	public int getWidth() {
+		Direction direction = Direction.WNES[getOrientation()];
+
+		return direction == Direction.WEST || direction == Direction.EAST ?
+			getDefinition().getLength() : getDefinition().getWidth();
+	}
+
 	@Override
 	public int hashCode() {
 		return packed;
@@ -134,5 +152,4 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 	 * @return {@code true} if the Player can see this GameObject, {@code false} if not.
 	 */
 	public abstract boolean viewableBy(Player player, World world);
-
 }
