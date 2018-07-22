@@ -58,7 +58,7 @@ class TakeGroundItemAction(val player: Player, private val groundItem: GroundIte
     }
 
     override fun action(): ActionBlock = {
-        val region = player.world.regionRepository[position.regionCoordinates]
+        val region = player.world.regionRepository[groundItem.position.regionCoordinates]
 
         if(region.contains(groundItem) && groundItem.isAvailable) {
             groundItem.isAvailable = false

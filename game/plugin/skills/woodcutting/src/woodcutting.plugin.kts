@@ -1,7 +1,7 @@
 
 import org.apollo.game.GameConstants
 import org.apollo.game.action.ActionBlock
-import org.apollo.game.action.AsyncDistancedAction
+import org.apollo.game.action.AsyncDistancedEntityAction
 import org.apollo.game.message.impl.ObjectActionMessage
 import org.apollo.game.model.Position
 import org.apollo.game.model.World
@@ -10,6 +10,7 @@ import org.apollo.game.model.entity.obj.GameObject
 import org.apollo.game.plugin.api.*
 import org.apollo.game.plugin.skills.woodcutting.Axe
 import org.apollo.game.plugin.skills.woodcutting.Tree
+import org.apollo.plugin.entity.walkto.walkToClosest
 import java.util.concurrent.TimeUnit
 
 // TODO Accurate chopping rates, e.g. https://twitter.com/JagexKieren/status/713403124464107520
@@ -41,11 +42,10 @@ class WoodcuttingAction(
     player: Player,
     private val tool: Axe,
     private val target: WoodcuttingTarget
-) : AsyncDistancedAction<Player>(DELAY, true, player, target.position, TREE_SIZE) {
+) : AsyncDistancedEntityAction<Player>(DELAY, true, player, target.getObject(player.world)!!) {
 
     companion object {
         private const val DELAY = 0
-        private const val TREE_SIZE = 2
         private const val MINIMUM_RESPAWN_TIME = 30L // In seconds
 
         /**
@@ -61,6 +61,11 @@ class WoodcuttingAction(
                 }
 
                 val action = WoodcuttingAction(player, axe, WoodcuttingTarget(message.id, message.position, wood))
+
+                if (action.triggerPositions.stream().noneMatch { position -> player.position == position }) {
+                    player.walkToClosest(action.triggerPositions, smart = true)
+                }
+
                 player.startAction(action)
             } else {
                 player.sendMessage("You do not have an axe for which you have the level to use.")
@@ -71,7 +76,7 @@ class WoodcuttingAction(
     }
 
     override fun action(): ActionBlock = {
-        mob.turnTo(position)
+        mob.turnTo(target.position)
 
         val level = mob.woodcutting.current
         if (level < target.tree.level) {

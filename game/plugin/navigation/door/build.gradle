@@ -1,6 +1,6 @@
 plugin {
     name = "door"
-        dependencies = ["api"]
+        dependencies = ["api", ":entity:walk-to"]
     authors = [
             "Shiver",
             "Arin"

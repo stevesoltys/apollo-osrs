@@ -1,167 +1,137 @@
-package org.apollo.plugin.navigation.door
-
-import org.apollo.game.action.DistancedAction
+import DoorType.*
 import org.apollo.game.model.Direction
 import org.apollo.game.model.Position
-import org.apollo.game.model.World
-import org.apollo.game.model.entity.Player
 import org.apollo.game.model.entity.obj.DynamicGameObject
 import org.apollo.game.model.entity.obj.GameObject
-import org.apollo.game.model.event.PlayerEvent
-import org.apollo.game.plugin.api.findObject
-import org.apollo.net.message.Message
-import java.util.*
 
 enum class DoorType {
-    LEFT, RIGHT, NOT_SUPPORTED
+    LEFT_HINGE, RIGHT_HINGE,
+    INNER_GATE, OUTER_GATE
 }
 
-class Door(private val gameObject: GameObject) {
+data class Door(val id: Int, private val replacement: Int, val open: Boolean,
+                private val type: DoorType, val otherDoor: Int?) {
 
     companion object {
+        private val toggledDoors = HashMap<GameObject, GameObject>()
 
-        val LEFT_HINGE_ORIENTATION: HashMap<Direction, Direction> = hashMapOf(
-            Direction.NORTH to Direction.WEST,
-            Direction.SOUTH to Direction.EAST,
-            Direction.WEST to Direction.SOUTH,
-            Direction.EAST to Direction.NORTH
-        )
+        fun toggle(gameObject: GameObject) {
+            val door = gameObject.getDoor()!!
+            val newPosition = door.toggledPosition(gameObject)
+            val newOrientation = door.toggledDirection(gameObject).toOrientationInteger()
 
-        val RIGHT_HINGE_ORIENTATION: HashMap<Direction, Direction> = hashMapOf(
-            Direction.NORTH to Direction.EAST,
-            Direction.SOUTH to Direction.WEST,
-            Direction.WEST to Direction.NORTH,
-            Direction.EAST to Direction.SOUTH
-        )
+            val oldRegion = gameObject.world.regionRepository.fromPosition(gameObject.position)
+            oldRegion.removeEntity(gameObject)
 
-        val toggledDoors: HashMap<GameObject, GameObject> = hashMapOf()
+            val toggledDoor = toggledDoors[gameObject] ?: DynamicGameObject.createPublic(gameObject.world,
+                door.replacement, newPosition, gameObject.type, newOrientation)
 
-        val LEFT_HINGED = setOf(1516, 1536, 1533)
-
-        val RIGHT_HINGED = setOf(1519, 1530, 4465, 4467, 3014, 3017, 3018, 3019, 11775)
-
-        /**
-         * Find a given door in the world
-         * @param world The [World] the door lives in
-         * @param position The [Position] of the door
-         * @param objectId The [GameObject] id of the door
-         */
-        fun find(world: World, position: Position, objectId: Int): Door? {
-            val region = world.regionRepository.fromPosition(position)
-            val gameObject = region.findObject(position, objectId).orElseGet(null)
-            return if (gameObject == null) {
-                null
+            if(toggledDoors.containsKey(gameObject)) {
+                toggledDoors.remove(gameObject)
             } else {
-                Door(gameObject)
+                toggledDoors[toggledDoor] = gameObject
+            }
+
+            val newRegion = gameObject.world.regionRepository.fromPosition(newPosition)
+            newRegion.addEntity(toggledDoor)
+        }
+    }
+
+    fun secondDoorPosition(gameObject: GameObject): Position {
+        var direction = if (open) {
+            toggledDirection(gameObject)
+        } else {
+            Direction.WNES[gameObject.orientation]
+        }
+
+        direction = if (type == LEFT_HINGE || (!open && type == INNER_GATE)) {
+            direction.clockwise().clockwise()
+        } else if (type == RIGHT_HINGE || (!open && type == OUTER_GATE)) {
+            direction.counterClockwise().counterClockwise()
+        } else if(type == OUTER_GATE && open) {
+            direction.opposite()
+        } else {
+            direction
+        }
+
+        return gameObject.position.step(1, direction)
+    }
+
+    fun toggledPosition(gameObject: GameObject): Position {
+        var direction = when {
+            open -> toggledDirection(gameObject).opposite()
+            else -> Direction.WNES[gameObject.orientation]
+        }
+
+        if (diagonal(gameObject)) {
+            direction = direction.clockwise().clockwise()
+        }
+
+        if (type == OUTER_GATE) {
+            return gameObject.position.step(2, direction)
+                .step(1, direction.counterClockwise().counterClockwise())
+        }
+
+        return gameObject.position.step(1, direction)
+    }
+
+    fun toggledDirection(gameObject: GameObject): Direction {
+        return if (open && type == RIGHT_HINGE) {
+            Direction.WNES[gameObject.orientation].counterClockwise().counterClockwise()
+        } else if (!open && (type == LEFT_HINGE || isGate())) {
+            Direction.WNES[gameObject.orientation].counterClockwise().counterClockwise()
+        } else {
+            Direction.WNES[gameObject.orientation].clockwise().clockwise()
+        }
+    }
+
+    fun turnToPosition(position: Position, gameObject: GameObject): Position {
+        return if (isGate()) {
+            position
+
+        } else if (open) {
+            if (position == toggledPosition(gameObject)) {
+                toggledPosition(gameObject).step(1, toggledDirection(gameObject))
+
+            } else {
+                toggledPosition(gameObject)
+            }
+        } else {
+            if (position == gameObject.position) {
+                gameObject.position.step(1, Direction.WNES[gameObject.orientation])
+
+            } else {
+                gameObject.position
             }
         }
     }
 
-    /**
-     * Returns the supported doors by the system
-     * See [DoorType]
-     */
-    fun supported(): Boolean {
-        return type() !== DoorType.NOT_SUPPORTED
-    }
+    fun walkPositions(gameObject: GameObject): Set<Position> {
+        return if (open && !isGate()) {
+            var first = toggledPosition(gameObject).step(1, toggledDirection(gameObject))
+            var second = toggledPosition(gameObject)
 
+            if (diagonal(gameObject)) {
+                first = first.step(1, toggledDirection(gameObject).clockwise().clockwise())
+                second = second.step(1, toggledDirection(gameObject).opposite().clockwise())
+            }
 
-    /**
-     * Computes the given door type by which id exists in
-     * the supported left and right hinged doors
-     */
-    fun type(): DoorType {
-        return when {
-            gameObject.id in LEFT_HINGED -> DoorType.LEFT
-            gameObject.id in RIGHT_HINGED -> DoorType.RIGHT
-            else -> DoorType.NOT_SUPPORTED
-        }
-    }
+            setOf(first, second)
 
-    /**
-     * Toggles a given [GameObject] orientation and position
-     * Stores the door state in toggleDoors class variable
-     */
-    fun toggle() {
-        val world = gameObject.world
-        val regionRepository = world.regionRepository
-
-        regionRepository.fromPosition(gameObject.position).removeEntity(gameObject)
-
-        val originalDoor: GameObject? = toggledDoors[gameObject]
-
-        if (originalDoor == null) {
-            val position = movePosition()
-            val orientation: Int = translateDirection()?.toOrientationInteger() ?: gameObject.orientation
-
-            val toggledDoor = DynamicGameObject.createPublic(world, gameObject.id, position, gameObject.type,
-                orientation)
-
-            regionRepository.fromPosition(position).addEntity(toggledDoor)
-            toggledDoors.put(toggledDoor, gameObject)
         } else {
-            toggledDoors.remove(gameObject)
-            regionRepository.fromPosition(originalDoor.position).addEntity(originalDoor)
-        }
+            var first = gameObject.position.step(1, Direction.WNES[gameObject.orientation])
+            var second = gameObject.position
 
-    }
+            if (diagonal(gameObject)) {
+                first = first.step(1, Direction.WNES[gameObject.orientation].clockwise().clockwise())
+                second = second.step(1, Direction.WNES[gameObject.orientation].opposite().clockwise())
+            }
 
-    /**
-     * Calculates the position to move the door based on orientation
-     */
-    private fun movePosition(): Position {
-        return gameObject.position.step(1, Direction.WNES[gameObject.orientation])
-    }
-
-    /**
-     * Calculates the orientation of the door based on
-     * if it is right or left hinged door
-     */
-    private fun translateDirection(): Direction? {
-        val direction = Direction.WNES[gameObject.orientation]
-        return when (type()) {
-            DoorType.LEFT -> LEFT_HINGE_ORIENTATION[direction]
-            DoorType.RIGHT -> RIGHT_HINGE_ORIENTATION[direction]
-            DoorType.NOT_SUPPORTED -> null
+            setOf(first, second)
         }
     }
 
+    private fun isGate() = type == INNER_GATE || type == OUTER_GATE
+
+    private fun diagonal(gameObject: GameObject) = gameObject.type == 9
 }
-
-class OpenDoorAction(private val player: Player, private val door: Door, position: Position) : DistancedAction<Player>(
-    0, true, player, position, DISTANCE) {
-
-    companion object {
-
-        /**
-         * The distance threshold that must be reached before the door is opened.
-         */
-        const val DISTANCE = 1
-
-        /**
-         * Starts a [OpenDoorAction] for the specified [Player], terminating the [Message] that triggered.
-         */
-        fun start(message: Message, player: Player, door: Door, position: Position) {
-            player.startAction(OpenDoorAction(player, door, position))
-            message.terminate()
-        }
-
-    }
-
-    override fun executeAction() {
-        if (player.world.submit(OpenDoorEvent(player))) {
-            player.turnTo(position)
-            door.toggle()
-        }
-        stop()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is OpenDoorAction && position == other.position && player == other.player
-    }
-
-    override fun hashCode(): Int = Objects.hash(position, player)
-
-}
-
-class OpenDoorEvent(player: Player) : PlayerEvent(player)
