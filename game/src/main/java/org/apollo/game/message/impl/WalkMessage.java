@@ -11,14 +11,14 @@ import org.apollo.net.message.Message;
 public final class WalkMessage extends Message {
 
 	/**
-	 * The destination.
-	 */
-	private final Position destination;
-
-	/**
 	 * The running flag.
 	 */
 	private final boolean run;
+
+	/**
+	 * The destination.
+	 */
+	private Position destination;
 
 	/**
 	 * Creates the message.
@@ -38,6 +38,15 @@ public final class WalkMessage extends Message {
 	 */
 	public Position getDestination() {
 		return destination;
+	}
+
+	/**
+	 * Sets the destination.
+	 *
+	 * @param destination The destination.
+	 */
+	public void setDestination(Position destination) {
+		this.destination = destination;
 	}
 
 	/**

@@ -34,10 +34,11 @@ public final class WalkMessageHandler extends MessageHandler<WalkMessage> {
 	@Override
 	public void handle(Player player, WalkMessage message) {
 		WalkingQueue queue = player.getWalkingQueue();
-		Position destination = new Position(message.getDestination().getX(), message.getDestination().getY(),
-			player.getPosition().getHeight());
 
-		if (!player.getPosition().isWithinDistance(destination, 20)) {
+		message.setDestination(new Position(message.getDestination().getX(), message.getDestination().getY(),
+			player.getPosition().getHeight()));
+
+		if (!player.getPosition().isWithinDistance(message.getDestination(), 20)) {
 			message.terminate();
 			return;
 		}
