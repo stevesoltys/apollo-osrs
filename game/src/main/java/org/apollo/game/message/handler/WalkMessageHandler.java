@@ -1,6 +1,7 @@
 package org.apollo.game.message.handler;
 
 import org.apollo.game.message.impl.WalkMessage;
+import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 import org.apollo.game.model.entity.Player;
 import org.apollo.game.model.entity.WalkingQueue;
@@ -33,8 +34,10 @@ public final class WalkMessageHandler extends MessageHandler<WalkMessage> {
 	@Override
 	public void handle(Player player, WalkMessage message) {
 		WalkingQueue queue = player.getWalkingQueue();
+		Position destination = new Position(message.getDestination().getX(), message.getDestination().getY(),
+			player.getPosition().getHeight());
 
-		if (!player.getPosition().isWithinDistance(message.getDestination(), 20)) {
+		if (!player.getPosition().isWithinDistance(destination, 20)) {
 			message.terminate();
 			return;
 		}
