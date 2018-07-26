@@ -47,7 +47,9 @@ public final class ObjectActionVerificationHandler extends MessageHandler<Object
 			return;
 		}
 
-		Position position = message.getPosition();
+		Position position = new Position(message.getPosition().getX(), message.getPosition().getY(),
+			player.getPosition().getHeight());
+
 		Region region = world.getRegionRepository().fromPosition(position);
 		Set<GameObject> objects = region.getEntities(position, EntityType.STATIC_OBJECT, EntityType.DYNAMIC_OBJECT);
 
@@ -61,6 +63,8 @@ public final class ObjectActionVerificationHandler extends MessageHandler<Object
 			message.terminate();
 			return;
 		}
+
+		message.setPosition(position);
 	}
 
 }

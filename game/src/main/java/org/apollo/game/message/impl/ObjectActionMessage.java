@@ -26,7 +26,7 @@ public final class ObjectActionMessage extends Message {
 	/**
 	 * The object's position.
 	 */
-	private final Position position;
+	private Position position;
 
 	/**
 	 * Creates a new object action message.
@@ -66,6 +66,15 @@ public final class ObjectActionMessage extends Message {
 	 */
 	public Position getPosition() {
 		return position;
+	}
+
+	/**
+	 * Sets the position of the object.
+	 *
+	 * @param position The position of the object.
+	 */
+	public void setPosition(Position position) {
+		this.position = position;
 	}
 
 }
