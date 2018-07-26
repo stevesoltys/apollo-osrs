@@ -79,7 +79,7 @@ public final class AStarPathfindingAlgorithm extends PathfindingAlgorithm {
 						continue;
 					}
 
-					Position adjacent = new Position(nextX, nextY);
+					Position adjacent = new Position(nextX, nextY, position.getHeight());
 					Direction direction = Direction.between(adjacent, position);
 					if (traversable(adjacent, direction) && traversable(position, direction.opposite())) {
 						Node node = nodes.computeIfAbsent(adjacent, Node::new);
