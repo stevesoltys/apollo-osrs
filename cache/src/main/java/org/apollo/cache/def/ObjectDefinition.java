@@ -76,6 +76,11 @@ public final class ObjectDefinition {
 	private boolean impenetrable = true;
 
 	/**
+	 * A mask containing the set of directions from which this object can be interacted with.
+	 */
+	private int interactionMask;
+
+	/**
 	 * Denotes whether this object has actions associated with it or not.
 	 */
 	private boolean interactive;
@@ -135,6 +140,15 @@ public final class ObjectDefinition {
 	 */
 	public int getId() {
 		return id;
+	}
+
+	/**
+	 * Gets the interaction mask for this object.
+	 *
+	 * @return The interaction mask.
+	 */
+	public int getInteractionMask() {
+		return interactionMask;
 	}
 
 	/**
@@ -237,6 +251,15 @@ public final class ObjectDefinition {
 	}
 
 	/**
+	 * Sets the interaction mask for this object.
+	 *
+	 * @param interactionMask The interaction mask.
+	 */
+	public void setInteractionMask(int interactionMask) {
+		this.interactionMask = interactionMask;
+	}
+
+	/**
 	 * Sets the length of this object.
 	 *
 	 * @param length The length.
@@ -289,5 +312,4 @@ public final class ObjectDefinition {
 	public void setObstructive(boolean obstructive) {
 		this.obstructive = obstructive;
 	}
-
 }

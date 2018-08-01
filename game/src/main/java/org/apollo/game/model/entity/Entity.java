@@ -16,14 +16,14 @@ public abstract class Entity {
 	protected Position position;
 
 	/**
-	 * The EntityBounds for this Entity.
-	 */
-	private final EntityBounds bounds = new EntityBounds(this);
-
-	/**
 	 * The World containing this Entity.
 	 */
 	protected final World world;
+
+	/**
+	 * The EntityBounds for this Entity.
+	 */
+	private EntityBounds bounds;
 
 	/**
 	 * Creates the Entity.
@@ -45,6 +45,11 @@ public abstract class Entity {
 	 * @return The EntityBounds.
 	 */
 	public EntityBounds getBounds() {
+
+		if(bounds == null) {
+			bounds = new EntityBounds(this);
+		}
+
 		return bounds;
 	}
 
@@ -74,11 +79,11 @@ public abstract class Entity {
 	public abstract EntityType getEntityType();
 
 	/**
-	 * Gets the height of this Entity.
+	 * Gets the length of this Entity.
 	 *
-	 * @return The height.
+	 * @return The length.
 	 */
-	public abstract int getHeight();
+	public abstract int getLength();
 
 	/**
 	 * Gets the width of this Entity.

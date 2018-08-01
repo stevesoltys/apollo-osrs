@@ -2,8 +2,6 @@ package org.apollo.game.action;
 
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
-import org.apollo.game.model.area.collision.CollisionUpdate;
-import org.apollo.game.model.area.collision.CollisionUpdateType;
 import org.apollo.game.model.entity.Entity;
 import org.apollo.game.model.entity.Mob;
 import org.apollo.game.model.entity.obj.GameObject;
@@ -36,7 +34,7 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 	/**
 	 * The entity.
 	 */
-	private final Entity entity;
+	protected final Entity entity;
 
 	/**
 	 * The trigger positions.
@@ -89,7 +87,7 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 	protected abstract void executeAction();
 
 	/**
-	 * Checks whether or not the mob is within distance of any of the object.
+	 * Checks whether or not the mob is within distance of the Entity.
 	 *
 	 * @return A flag indicating whether or not the mob is within distance.
 	 */
@@ -104,7 +102,9 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 	 */
 	protected Set<Position> getTriggerPositions() {
 		if (entity instanceof GameObject) {
-			return getObjectTriggerPositions();
+			GameObject gameObject = (GameObject) entity;
+
+			return gameObject.getBounds().getInteractionPositions();
 
 		} else if (entity instanceof Mob) {
 			return getMobTriggerPositions();
@@ -113,60 +113,10 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 		return Collections.emptySet();
 	}
 
-	protected Set<Position> getObjectTriggerPositions() {
-		GameObject gameObject = (GameObject) entity;
-		Set<Position> positions = new HashSet<>();
-
-		CollisionUpdate.Builder builder = new CollisionUpdate.Builder();
-		builder.type(CollisionUpdateType.ADDING);
-		builder.object(gameObject);
-		builder.build();
-
-		builder.build().getFlags().entries().forEach(entry -> {
-			Position position = entry.getKey();
-			CollisionUpdate.DirectionFlag flag = entry.getValue();
-			Direction direction = flag.getDirection();
-
-			positions.add(position.step(1, direction));
-
-			if(gameObject.getType() == 9) {
-				positions.add(position.step(1, direction.clockwise().clockwise().clockwise()));
-				positions.add(position.step(1, direction.counterClockwise().counterClockwise().counterClockwise()));
-
-			} else {
-				if (traversable(position.step(1, direction.clockwise()), direction.clockwise().opposite())) {
-					positions.add(position.step(1, direction.clockwise()));
-				}
-
-				if (traversable(position.step(1, direction.clockwise().clockwise()),
-					direction.clockwise().clockwise().opposite())) {
-					positions.add(position.step(1, direction.clockwise().clockwise()));
-				}
-
-				if (traversable(position.step(1, direction.counterClockwise()), direction.counterClockwise().opposite())) {
-					positions.add(position.step(1, direction.counterClockwise()));
-				}
-
-				if (traversable(position.step(1, direction.counterClockwise().counterClockwise()),
-					direction.counterClockwise().counterClockwise().opposite())) {
-					positions.add(position.step(1, direction.counterClockwise().counterClockwise()));
-				}
-			}
-		});
-
-		for (Position entityPosition : gameObject.getBounds()) {
-			if (!gameObject.getDefinition().isObstructive()) {
-				positions.add(entityPosition);
-			}
-		}
-
-		return positions;
-	}
-
 	private Set<Position> getMobTriggerPositions() {
 		Set<Position> positions = new HashSet<>();
 
-		entity.getBounds().forEach(position ->
+		entity.getBounds().getPositions().forEach(position ->
 			Arrays.stream(Direction.values())
 				.filter(direction -> direction != Direction.NONE)
 				.forEach(direction -> positions.add(position.step(1, direction))));

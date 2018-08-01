@@ -36,14 +36,14 @@ public class EntityBounds {
 	/**
 	 * The set of positions that the Entity occupies.
 	 */
-	private Set<Position> positions = new HashSet<>();
+	private Position[] positions = new Position[0];
 
 	/**
 	 * Creates an EntityBounds.
 	 *
 	 * @param entity The entity.
 	 */
-	EntityBounds(Entity entity) {
+	protected EntityBounds(Entity entity) {
 		this.entity = entity;
 	}
 
@@ -56,7 +56,7 @@ public class EntityBounds {
 	public boolean contains(Position position) {
 		Position entityPosition = entity.getPosition();
 		int width = entity.getWidth();
-		int height = entity.getHeight();
+		int height = entity.getLength();
 
 		return position.getX() >= entityPosition.getX() && position.getX() < entityPosition.getX() + width &&
 			position.getY() >= entityPosition.getY() && position.getY() < entityPosition.getY() + height &&
@@ -66,32 +66,20 @@ public class EntityBounds {
 	/**
 	 * Gets the set of positions that the Entity occupies.
 	 * <p>
-	 * If the width, height, or Position of the entity has changed since the last call, it will calculate the new set
-	 * of positions.
+	 * If the width, height, or Position of the entity has changed since the last call, it will calculate a new
+	 * positions set before returning.
 	 *
 	 * @return The set of positions.
 	 */
 	public Set<Position> getPositions() {
+		Set<Position> positionSet = new HashSet<>();
 
-		if (entity.getPosition() == null) {
-			positions.clear();
-			return positions;
-		}
-
-		if (!position.equals(entity.getPosition()) || width != entity.getWidth() || height != entity.getHeight()) {
-			position = entity.getPosition();
-			width = entity.getWidth();
-			height = entity.getHeight();
-
-			positions.clear();
-
-			for (int deltaX = 0; deltaX < width; deltaX++) {
-				for (int deltaY = 0; deltaY < height; deltaY++) {
-					positions.add(position.step(deltaX, Direction.EAST).step(deltaY, Direction.NORTH));
-				}
+		for (int deltaX = 0; deltaX < entity.getWidth(); deltaX++) {
+			for (int deltaY = 0; deltaY < entity.getLength(); deltaY++) {
+				positionSet.add(entity.getPosition().step(deltaX, Direction.EAST).step(deltaY, Direction.NORTH));
 			}
 		}
 
-		return positions;
+		return positionSet;
 	}
 }

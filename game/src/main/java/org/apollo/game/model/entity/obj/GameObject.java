@@ -4,7 +4,6 @@ import com.google.common.base.MoreObjects;
 import org.apollo.cache.def.ObjectDefinition;
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
-import org.apollo.game.model.Direction;
 import org.apollo.game.model.World;
 import org.apollo.game.model.area.EntityUpdateType;
 import org.apollo.game.model.area.Region;
@@ -12,9 +11,6 @@ import org.apollo.game.model.area.update.GroupableEntity;
 import org.apollo.game.model.area.update.ObjectUpdateOperation;
 import org.apollo.game.model.entity.Entity;
 import org.apollo.game.model.entity.Player;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Represents an object in the game world.
@@ -28,6 +24,11 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 	 * The packed value that stores this object's id, type, and orientation.
 	 */
 	private final int packed;
+
+	/**
+	 * The bounds of this GameObject.
+	 */
+	private GameObjectBounds bounds;
 
 	/**
 	 * Creates the GameObject.
@@ -89,9 +90,17 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 		return packed >> 2 & 0x3F;
 	}
 
+	@Override
+	public GameObjectBounds getBounds() {
+		if(bounds == null) {
+			bounds = new GameObjectBounds(this);
+		}
+
+		return bounds;
+	}
 
 	@Override
-	public int getHeight() {
+	public int getLength() {
 		Direction direction = Direction.WNES[getOrientation()];
 
 		return direction == Direction.WEST || direction == Direction.EAST ?
@@ -109,28 +118,6 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 	@Override
 	public int hashCode() {
 		return packed;
-	}
-
-	@Override
-	public Set<Position> getBounds() {
-		Set<Position> positions = new HashSet<>();
-
-		Direction orientation = Direction.WNES[getOrientation()];
-		int width = getDefinition().getWidth();
-		int height = getDefinition().getLength();
-
-		if (orientation == Direction.WEST || orientation == Direction.EAST) {
-			width = getDefinition().getLength();
-			height = getDefinition().getWidth();
-		}
-
-		for (int deltaX = 0; deltaX < width; deltaX++) {
-			for (int deltaY = 0; deltaY < height; deltaY++) {
-				positions.add(position.step(deltaX, Direction.EAST).step(deltaY, Direction.NORTH));
-			}
-		}
-
-		return positions;
 	}
 
 	@Override

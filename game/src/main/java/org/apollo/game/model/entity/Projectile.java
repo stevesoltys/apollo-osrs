@@ -415,7 +415,7 @@ public final class Projectile extends Entity implements GroupableEntity {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getLength() {
 		return 1;
 	}
 
@@ -428,6 +428,11 @@ public final class Projectile extends Entity implements GroupableEntity {
 	public int hashCode() {
 		return Objects.hashCode(position, destination, delay, lifetime, target, startHeight,
 			endHeight, pitch, offset, graphic);
+	}
+
+	@Override
+	public boolean visibleTo(Player player) {
+		return true;
 	}
 
 	@Override

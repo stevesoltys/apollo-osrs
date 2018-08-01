@@ -3,6 +3,7 @@ import org.apollo.game.message.impl.ObjectActionMessage
 import org.apollo.game.model.Position
 import org.apollo.game.model.entity.Player
 import org.apollo.game.model.entity.obj.GameObject
+import org.apollo.game.model.entity.obj.ObjectType
 import org.apollo.game.plugin.api.findObject
 import org.apollo.net.message.Message
 import org.apollo.plugin.entity.walkto.walkToClosest
@@ -20,7 +21,7 @@ on { ObjectActionMessage::class }
         }
 
 class OpenDoorAction(private val player: Player, private val gameObject: GameObject) :
-        EntityDistancedAction<Player>(0, false, player, gameObject) {
+        EntityDistancedAction<Player>(0, true, player, gameObject) {
 
     companion object {
         fun start(message: Message, player: Player, gameObject: GameObject) {
@@ -57,14 +58,18 @@ class OpenDoorAction(private val player: Player, private val gameObject: GameObj
     }
 
     override fun equals(other: Any?): Boolean {
-        return other is OpenDoorAction && player == other.player && gameObject == other.gameObject
+        return other is OpenDoorAction && player == other.player && entity == other.entity
     }
 
-    override fun hashCode(): Int = Objects.hash(player, gameObject)
+    override fun hashCode(): Int = Objects.hash(player, entity)
 
     override fun getTriggerPositions(): MutableSet<Position> {
-        val positions = objectTriggerPositions
-        positions.remove(gameObject.getDoor()!!.toggledPosition(gameObject))
+        val positions = super.getTriggerPositions()
+
+        if(ObjectType.valueOf(gameObject.type) == ObjectType.DIAGONAL_WALL) {
+            positions.remove(gameObject.getDoor()!!.toggledPosition(gameObject))
+        }
+
         return positions
     }
 }

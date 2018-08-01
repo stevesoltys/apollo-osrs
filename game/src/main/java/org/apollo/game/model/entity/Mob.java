@@ -328,7 +328,7 @@ public abstract class Mob extends Entity {
 	}
 
 	@Override
-	public int getHeight() {
+	public int getLength() {
 		return definition.map(NpcDefinition::getSize).orElse(1);
 	}
 
