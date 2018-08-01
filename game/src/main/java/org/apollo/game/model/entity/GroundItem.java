@@ -1,6 +1,5 @@
 package org.apollo.game.model.entity;
 
-import com.google.common.collect.ImmutableSet;
 import org.apollo.game.model.Item;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
@@ -11,7 +10,6 @@ import org.apollo.game.model.area.update.ItemUpdateOperation;
 import org.apollo.game.model.area.update.UpdateOperation;
 
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * An {@link Item} displayed on the ground.
@@ -87,6 +85,16 @@ public final class GroundItem extends Entity implements GroupableEntity {
 	@Override
 	public EntityType getEntityType() {
 		return EntityType.GROUND_ITEM;
+	}
+
+	@Override
+	public int getLength() {
+		return 1;
+	}
+
+	@Override
+	public int getWidth() {
+		return 1;
 	}
 
 	/**
@@ -184,11 +192,6 @@ public final class GroundItem extends Entity implements GroupableEntity {
 	@Override
 	public boolean visibleTo(Player player) {
 		return global || player.equals(getOwner());
-	}
-
-	@Override
-	public Set<Position> getBounds() {
-		return ImmutableSet.of(position);
 	}
 
 	@Override

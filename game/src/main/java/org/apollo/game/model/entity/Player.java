@@ -1,9 +1,10 @@
 package org.apollo.game.model.entity;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
 import org.apollo.game.message.impl.*;
-import org.apollo.game.model.*;
+import org.apollo.game.model.Appearance;
+import org.apollo.game.model.Position;
+import org.apollo.game.model.World;
 import org.apollo.game.model.entity.attr.*;
 import org.apollo.game.model.entity.obj.DynamicGameObject;
 import org.apollo.game.model.entity.setting.MembershipStatus;
@@ -602,11 +603,6 @@ public final class Player extends Mob {
 	@Override
 	public int hashCode() {
 		return credentials.hashCode();
-	}
-
-	@Override
-	public Set<Position> getBounds() {
-		return ImmutableSet.of(position);
 	}
 
 	/**

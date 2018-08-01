@@ -182,7 +182,7 @@ public final class ObjectDefinitionDecoder implements Runnable {
 			} else if (opcode == 68) {
 				int mapSceneID = data.getShort() & 0xFFFF;
 			} else if (opcode == 69) {
-				data.get();
+				definition.setInteractionMask(data.get());
 			} else if (opcode == 70) {
 				int offsetX = data.getShort() & 0xFFFF;
 			} else if (opcode == 71) {

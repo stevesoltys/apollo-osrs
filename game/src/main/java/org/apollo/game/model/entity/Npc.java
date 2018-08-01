@@ -3,14 +3,11 @@ package org.apollo.game.model.entity;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import org.apollo.cache.def.NpcDefinition;
-import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 import org.apollo.game.sync.block.SynchronizationBlock;
 
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * A {@link Mob} that is not controlled by a player.
@@ -95,19 +92,6 @@ public final class Npc extends Mob {
 	public int hashCode() {
 		final int prime = 31;
 		return prime * index + getId();
-	}
-
-	@Override
-	public Set<Position> getBounds() {
-		Set<Position> positions = new HashSet<>();
-
-		for (int deltaX = 0; deltaX < getDefinition().getSize(); deltaX++) {
-			for (int deltaY = 0; deltaY < getDefinition().getSize(); deltaY++) {
-				positions.add(position.step(deltaX, Direction.EAST).step(deltaY, Direction.NORTH));
-			}
-		}
-
-		return positions;
 	}
 
 	/**

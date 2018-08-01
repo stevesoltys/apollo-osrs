@@ -3,8 +3,6 @@ package org.apollo.game.model.entity;
 import org.apollo.game.model.Position;
 import org.apollo.game.model.World;
 
-import java.util.Set;
-
 /**
  * Represents an in-game entity, such as a mob, object, projectile, etc.
  *
@@ -13,13 +11,19 @@ import java.util.Set;
 public abstract class Entity {
 
 	/**
-	 * The World containing this Entity.
-	 */
-	protected final World world;
-	/**
 	 * The Position of this Entity.
 	 */
 	protected Position position;
+
+	/**
+	 * The World containing this Entity.
+	 */
+	protected final World world;
+
+	/**
+	 * The EntityBounds for this Entity.
+	 */
+	private EntityBounds bounds;
 
 	/**
 	 * Creates the Entity.
@@ -34,6 +38,20 @@ public abstract class Entity {
 
 	@Override
 	public abstract boolean equals(Object obj);
+
+	/**
+	 * Gets the {@link EntityBounds} for this Entity.
+	 *
+	 * @return The EntityBounds.
+	 */
+	public EntityBounds getBounds() {
+
+		if(bounds == null) {
+			bounds = new EntityBounds(this);
+		}
+
+		return bounds;
+	}
 
 	/**
 	 * Gets the {@link Position} of this Entity.
@@ -60,6 +78,20 @@ public abstract class Entity {
 	 */
 	public abstract EntityType getEntityType();
 
+	/**
+	 * Gets the length of this Entity.
+	 *
+	 * @return The length.
+	 */
+	public abstract int getLength();
+
+	/**
+	 * Gets the width of this Entity.
+	 *
+	 * @return The width.
+	 */
+	public abstract int getWidth();
+
 	@Override
 	public abstract int hashCode();
 
@@ -70,11 +102,4 @@ public abstract class Entity {
 	 * @return The visibility flag.
 	 */
 	public abstract boolean visibleTo(Player player);
-
-	/**
-	 * Returns the set of positions that this Entity occupies.
-	 *
-	 * @return The set of bounds.
-	 */
-	public abstract Set<Position> getBounds();
 }
