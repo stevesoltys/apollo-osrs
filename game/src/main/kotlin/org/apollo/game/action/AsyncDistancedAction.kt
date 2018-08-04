@@ -28,8 +28,8 @@ abstract class AsyncDistancedEntityAction<T : Mob> : EntityDistancedAction<T>, A
 
     override var continuation: ActionCoroutine? = null
 
-    constructor(delay: Int, immediate: Boolean, mob: T, entity: Entity) :
-        super(delay, immediate, mob, entity)
+    constructor(delay: Int, immediate: Boolean, mob: T) :
+        super(delay, immediate, mob)
 
     override fun executeAction() {
         if (update()) {

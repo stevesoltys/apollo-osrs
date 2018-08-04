@@ -27,6 +27,12 @@ fun Region.findObject(position: Position, id: Int): Optional<GameObject> {
         .findFirst()
 }
 
+fun World.getObject(position: Position, id: Int): GameObject {
+    return regionRepository.fromPosition(position)
+        .find<GameObject>(position, { it.id == id }, DYNAMIC_OBJECT, STATIC_OBJECT)
+        .findFirst().orElseThrow { RuntimeException("Could not find game object at position $position with type $id") }
+}
+
 class ExpireObjectTask(
     private val world: World,
     private val existing: GameObject,
