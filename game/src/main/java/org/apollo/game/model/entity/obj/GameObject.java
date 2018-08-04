@@ -103,7 +103,7 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 	public int getLength() {
 		Direction direction = Direction.WNES[getOrientation()];
 
-		return direction == Direction.WEST || direction == Direction.EAST ?
+		return direction == Direction.SOUTH || direction == Direction.NORTH ?
 			getDefinition().getWidth() : getDefinition().getLength();
 	}
 
@@ -111,7 +111,7 @@ public abstract class GameObject extends Entity implements GroupableEntity {
 	public int getWidth() {
 		Direction direction = Direction.WNES[getOrientation()];
 
-		return direction == Direction.WEST || direction == Direction.EAST ?
+		return direction == Direction.SOUTH || direction == Direction.NORTH ?
 			getDefinition().getLength() : getDefinition().getWidth();
 	}
 

@@ -3,6 +3,7 @@ package org.apollo.game.model.entity;
 import org.apollo.game.model.Direction;
 import org.apollo.game.model.Position;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,32 +20,21 @@ public class EntityBounds {
 	private final Entity entity;
 
 	/**
-	 * The last known Position of the Entity.
-	 */
-	private Position position = new Position(0, 0);
-
-	/**
-	 * The last known width of the Entity.
-	 */
-	private int width = 0;
-
-	/**
-	 * The last known height of the Entity.
-	 */
-	private int height = 0;
-
-	/**
-	 * The set of positions that the Entity occupies.
-	 */
-	private Position[] positions = new Position[0];
-
-	/**
 	 * Creates an EntityBounds.
 	 *
 	 * @param entity The entity.
 	 */
 	protected EntityBounds(Entity entity) {
 		this.entity = entity;
+	}
+
+	/**
+	 * Gets the set of positions from which this entity can be interacted with.
+	 *
+	 * @return The set of interaction positions.
+	 */
+	public Set<Position> getInteractionPositions() {
+		return Collections.emptySet();
 	}
 
 	/**

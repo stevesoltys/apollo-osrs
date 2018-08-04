@@ -21,10 +21,10 @@ public class GameObjectBounds extends EntityBounds {
 	 * An {@link ImmutableMap} of Directions mapped to their mask bits for a {@link GameObject} interaction mask.
 	 */
 	private static final Map<Direction, Integer> INTERACTION_MASK_BITS = ImmutableMap.<Direction, Integer>builder()
-		.put(Direction.NORTH, 0x1)
-		.put(Direction.EAST, 0x8)
-		.put(Direction.SOUTH, 0x4)
-		.put(Direction.WEST, 0x2)
+		.put(Direction.SOUTH, 0x1)
+		.put(Direction.WEST, 0x8)
+		.put(Direction.NORTH, 0x4)
+		.put(Direction.EAST, 0x2)
 		.build();
 
 	/**
