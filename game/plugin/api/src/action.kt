@@ -22,3 +22,10 @@ fun Player.startDistancedAction(entity: Entity, delay: Int = 0, immediate: Boole
 
     startAction(AsyncDistancedActionProxy(this, delay, immediate, entity.bounds.interactionPositions, block))
 }
+
+fun Player.startDistancedAction(triggerPositions: Set<Position>, delay: Int = 0, immediate: Boolean = false,
+                                block: ActionBlock) {
+    walkToClosest(triggerPositions, smart = true)
+
+    startAction(AsyncDistancedActionProxy(this, delay, immediate, triggerPositions, block))
+}

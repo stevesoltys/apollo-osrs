@@ -58,33 +58,6 @@ fun Mob.walkTo(target: Position, positionPredicate: ((Position) -> Boolean)? = n
     followPath(pathfinder.find(position, target), positionPredicate)
 }
 
-fun Mob.walkToClosest(targets: Set<Position>, positionPredicate: ((Position) -> Boolean)? = null,
-                      smart: Boolean = false) {
-    if(targets.contains(position)) {
-        return
-    }
-
-    val pathfinder = if (smart) {
-        AStarPathfindingAlgorithm(world.collisionManager, EuclideanHeuristic())
-    } else {
-        SimplePathfindingAlgorithm(world.collisionManager)
-    }
-
-    var bestPath: Deque<Position>? = null
-
-    targets.forEach { target ->
-        val currentPath = pathfinder.find(position, target)
-
-        if (currentPath.isNotEmpty() && (bestPath == null || (bestPath!!.size > currentPath.size))) {
-            bestPath = currentPath
-        }
-    }
-
-    if(bestPath != null) {
-        followPath(bestPath!!, positionPredicate)
-    }
-}
-
 private fun Mob.followPath(path: Deque<Position>, positionPredicate: ((Position) -> Boolean)? = null) {
     if (positionPredicate == null) {
         walkingQueue.addSteps(path)
