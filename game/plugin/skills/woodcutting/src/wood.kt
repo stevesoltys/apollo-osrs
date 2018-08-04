@@ -1,5 +1,7 @@
 package org.apollo.game.plugin.skills.woodcutting
 
+import org.apollo.game.plugin.api.rand
+
 /*
  * Values thanks to: http://oldschoolrunescape.wikia.com/wiki/Woodcutting
  * https://twitter.com/JagexKieren/status/713409506273787904
@@ -22,6 +24,8 @@ enum class Tree(
     MAHOGANY(MAHOGANY_OBJECTS, id = 6332, stump = 1342, level = 50, exp = 125.0, chance = 12.5),
     YEW(YEW_OBJECTS, id = 1515, stump = 1342, level = 60, exp = 175.0, chance = 12.5),
     MAGIC(MAGIC_OBJECTS, id = 1513, stump = 1324, level = 75, exp = 250.0, chance = 12.5);
+
+    fun isCutDown(): Boolean = rand(100) <= chance * 100
 
     companion object {
         private val TREES = Tree.values().flatMap { tree -> tree.objects.map { Pair(it, tree) } }.toMap()

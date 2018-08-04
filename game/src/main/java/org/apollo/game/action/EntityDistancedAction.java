@@ -32,16 +32,6 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 	private final boolean immediate;
 
 	/**
-	 * The entity.
-	 */
-	protected final Entity entity;
-
-	/**
-	 * The trigger positions.
-	 */
-	private Set<Position> triggerPositions;
-
-	/**
 	 * A flag indicating if the distance has been reached yet.
 	 */
 	private boolean reached;
@@ -52,21 +42,15 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 	 * @param delay     The delay between executions once the distance threshold is reached.
 	 * @param immediate Whether or not this action fires immediately after the distance threshold is reached.
 	 * @param mob       The mob.
-	 * @param entity    The entity that we are approaching.
 	 */
-	public EntityDistancedAction(int delay, boolean immediate, T mob, Entity entity) {
+	public EntityDistancedAction(int delay, boolean immediate, T mob) {
 		super(0, true, mob);
 		this.delay = delay;
 		this.immediate = immediate;
-		this.entity = entity;
 	}
 
 	@Override
 	public final void execute() {
-
-		if(triggerPositions == null || entity instanceof Mob) {
-			triggerPositions = getTriggerPositions();
-		}
 
 		if (reached) { // Don't check again in case the player has moved away since it was reached
 			executeAction();
@@ -87,44 +71,18 @@ public abstract class EntityDistancedAction<T extends Mob> extends Action<T> {
 	protected abstract void executeAction();
 
 	/**
+	 * Gets the set of positions that will trigger this action.
+	 *
+	 * @return The set of trigger positions.
+	 */
+	protected abstract Set<Position> getTriggerPositions();
+
+	/**
 	 * Checks whether or not the mob is within distance of the Entity.
 	 *
 	 * @return A flag indicating whether or not the mob is within distance.
 	 */
 	private boolean withinDistance() {
-		return triggerPositions.stream().anyMatch(position -> mob.getPosition().equals(position));
-	}
-
-	/**
-	 * Gets the set of positions that will trigger this action.
-	 *
-	 * @return The set of trigger positions.
-	 */
-	protected Set<Position> getTriggerPositions() {
-		if (entity instanceof GameObject) {
-			GameObject gameObject = (GameObject) entity;
-
-			return gameObject.getBounds().getInteractionPositions();
-
-		} else if (entity instanceof Mob) {
-			return getMobTriggerPositions();
-		}
-
-		return Collections.emptySet();
-	}
-
-	private Set<Position> getMobTriggerPositions() {
-		Set<Position> positions = new HashSet<>();
-
-		entity.getBounds().getPositions().forEach(position ->
-			Arrays.stream(Direction.values())
-				.filter(direction -> direction != Direction.NONE)
-				.forEach(direction -> positions.add(position.step(1, direction))));
-
-		return positions;
-	}
-
-	private boolean traversable(Position position, Direction direction) {
-		return mob.getWorld().getCollisionManager().traversable(position, mob.getEntityType(), direction);
+		return getTriggerPositions().stream().anyMatch(position -> mob.getPosition().equals(position));
 	}
 }
