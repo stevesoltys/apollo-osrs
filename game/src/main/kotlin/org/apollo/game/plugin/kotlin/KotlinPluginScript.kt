@@ -13,11 +13,20 @@ import org.apollo.game.model.event.PlayerEvent
 import org.apollo.game.plugin.PluginContext
 import org.apollo.net.message.Message
 import kotlin.reflect.KClass
-import kotlin.script.templates.ScriptTemplateDefinition
+import kotlin.script.experimental.annotations.KotlinScript
+import kotlin.script.experimental.annotations.KotlinScriptCompilationConfigurator
+import kotlin.script.experimental.annotations.KotlinScriptEvaluator
+import kotlin.script.experimental.annotations.KotlinScriptFileExtension
+import kotlin.script.experimental.api.ScriptCompilationConfigurator
+import kotlin.script.experimental.api.ScriptCompileConfiguration
+import kotlin.script.experimental.api.ScriptCompileConfigurationProperties
+import kotlin.script.experimental.api.ScriptingEnvironment
+import kotlin.script.experimental.jvm.runners.BasicJvmScriptEvaluator
 
-@ScriptTemplateDefinition(
-    scriptFilePattern = ".*\\.plugin\\.kts"
-)
+@KotlinScript
+@KotlinScriptCompilationConfigurator(KotlinPluginScriptConfigurator::class)
+@KotlinScriptEvaluator(BasicJvmScriptEvaluator::class)
+@KotlinScriptFileExtension("plugin.kts")
 abstract class KotlinPluginScript(private var world: World, val context: PluginContext) {
     var startListener: (World) -> Unit = { _ -> }
     var stopListener: (World) -> Unit = { _ -> }
@@ -65,6 +74,12 @@ abstract class KotlinPluginScript(private var world: World, val context: PluginC
         this.stopListener.invoke(world)
     }
 
+}
+
+class KotlinPluginScriptConfigurator(environment: ScriptingEnvironment) : ScriptCompilationConfigurator {
+    override val defaultConfiguration = ScriptCompileConfiguration(environment, listOf(
+        ScriptCompileConfigurationProperties.defaultImports to listOf("org.apollo.game.plugins.api")
+    ))
 }
 
 /**
