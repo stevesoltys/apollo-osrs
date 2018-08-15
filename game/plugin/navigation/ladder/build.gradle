@@ -1,0 +1,6 @@
+plugin {
+    name = "ladder"
+    authors = [
+        "Noob noob",
+    ]
+}
