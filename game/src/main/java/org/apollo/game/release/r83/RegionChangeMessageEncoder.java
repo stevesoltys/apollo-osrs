@@ -1,6 +1,5 @@
 package org.apollo.game.release.r83;
 
-import com.oldscape.tool.util.MapXTEA;
 import org.apollo.game.message.impl.RegionChangeMessage;
 import org.apollo.game.model.Position;
 import org.apollo.net.codec.game.*;
@@ -33,8 +32,7 @@ public class RegionChangeMessageEncoder extends MessageEncoder<RegionChangeMessa
 
 		for (int xCalc = (regionX - 6) / 8; xCalc <= (regionX + 6) / 8; xCalc++) {
 			for (int yCalc = (regionY - 6) / 8; yCalc <= (regionY + 6) / 8; yCalc++) {
-				int region = yCalc + (xCalc << 8);
-				final int[] mapData = MapXTEA.getKey(region);
+				final int[] mapData = new int[4];
 				if (forceSend
 					|| ((yCalc != 49) && (yCalc != 149) && (yCalc != 147)
 					&& (xCalc != 50) && ((xCalc != 49) || (yCalc != 47)))) {

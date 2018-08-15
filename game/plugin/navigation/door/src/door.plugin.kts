@@ -1,70 +1,35 @@
-import org.apollo.game.action.EntityDistancedAction
 import org.apollo.game.message.impl.ObjectActionMessage
-import org.apollo.game.model.Position
-import org.apollo.game.model.entity.Player
-import org.apollo.game.model.entity.obj.GameObject
-import org.apollo.game.plugin.api.findObject
-import org.apollo.net.message.Message
-import org.apollo.plugin.entity.walkto.walkToClosest
-import java.util.*
+import org.apollo.game.model.entity.obj.ObjectType
+import org.apollo.game.plugin.api.getObject
+import org.apollo.game.plugin.api.startDistancedAction
 
 on { ObjectActionMessage::class }
-        .where { option == 1 }
-        .then {
-            val region = it.world.regionRepository.fromPosition(position)
-            val gameObject = region.findObject(position, id).orElse(null)
+    .where { option == 1 }
+    .then { player ->
+        val gameObject = player.world.getObject(position, id)
 
-            if (gameObject != null && gameObject.isDoor()) {
-                OpenDoorAction.start(this, it, gameObject)
-            }
+        if (!gameObject.isDoor()) {
+            return@then
         }
 
-class OpenDoorAction(private val player: Player, private val gameObject: GameObject) :
-        EntityDistancedAction<Player>(0, false, player, gameObject) {
-
-    companion object {
-        fun start(message: Message, player: Player, gameObject: GameObject) {
-            val action = OpenDoorAction(player, gameObject)
-
-            if (action.triggerPositions.stream().noneMatch { position -> player.position == position }) {
-                player.walkToClosest(action.triggerPositions, smart = true)
-            }
-
-            player.startAction(action)
-            message.terminate()
-        }
-    }
-
-    override fun executeAction() {
         val door = gameObject.getDoor()!!
+        val positions = gameObject.bounds.interactionPositions
 
-        if (door.otherDoor != null) {
-            val otherDoorPosition = door.secondDoorPosition(gameObject)
-            val otherDoorRegion = gameObject.world.regionRepository.fromPosition(otherDoorPosition)
-            val otherGameObject = otherDoorRegion.findObject(otherDoorPosition, door.otherDoor).orElse(null)
-
-            if (otherGameObject == null) {
-                stop()
-                return
-            }
-
-            Door.toggle(otherGameObject)
+        if(ObjectType.valueOf(gameObject.type) == ObjectType.DIAGONAL_WALL) {
+            positions.remove(gameObject.getDoor()!!.toggledPosition(gameObject))
         }
 
-        Door.toggle(gameObject)
-        player.turnTo(door.turnToPosition(player.position, gameObject))
-        stop()
-    }
+        player.startDistancedAction(positions, 0, true) {
 
-    override fun equals(other: Any?): Boolean {
-        return other is OpenDoorAction && player == other.player && gameObject == other.gameObject
-    }
+            if (door.otherDoor != null) {
+                val otherDoorPosition = door.secondDoorPosition(gameObject)
+                val otherDoorId = door.otherDoor
 
-    override fun hashCode(): Int = Objects.hash(player, gameObject)
+                Door.toggle(gameObject.world.getObject(otherDoorPosition, otherDoorId))
+            }
 
-    override fun getTriggerPositions(): MutableSet<Position> {
-        val positions = objectTriggerPositions
-        positions.remove(gameObject.getDoor()!!.toggledPosition(gameObject))
-        return positions
+            Door.toggle(gameObject)
+            player.turnTo(door.turnToPosition(player.position, gameObject))
+            stop()
+        }
     }
-}

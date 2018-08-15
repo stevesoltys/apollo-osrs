@@ -106,31 +106,6 @@ data class Door(val id: Int, private val replacement: Int, val open: Boolean,
         }
     }
 
-    fun walkPositions(gameObject: GameObject): Set<Position> {
-        return if (open && !isGate()) {
-            var first = toggledPosition(gameObject).step(1, toggledDirection(gameObject))
-            var second = toggledPosition(gameObject)
-
-            if (diagonal(gameObject)) {
-                first = first.step(1, toggledDirection(gameObject).clockwise().clockwise())
-                second = second.step(1, toggledDirection(gameObject).opposite().clockwise())
-            }
-
-            setOf(first, second)
-
-        } else {
-            var first = gameObject.position.step(1, Direction.WNES[gameObject.orientation])
-            var second = gameObject.position
-
-            if (diagonal(gameObject)) {
-                first = first.step(1, Direction.WNES[gameObject.orientation].clockwise().clockwise())
-                second = second.step(1, Direction.WNES[gameObject.orientation].opposite().clockwise())
-            }
-
-            setOf(first, second)
-        }
-    }
-
     private fun isGate() = type == INNER_GATE || type == OUTER_GATE
 
     private fun diagonal(gameObject: GameObject) = gameObject.type == 9

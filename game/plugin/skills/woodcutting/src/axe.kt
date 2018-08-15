@@ -11,7 +11,8 @@ enum class Axe(val id: Int, val level: Int, animation: Int, val pulses: Int) {
     BLACK(id = 1361, level = 11, animation = 873, pulses = 6),
     MITHRIL(id = 1355, level = 21, animation = 871, pulses = 5),
     ADAMANT(id = 1357, level = 31, animation = 869, pulses = 4),
-    RUNE(id = 1359, level = 41, animation = 867, pulses = 3);
+    RUNE(id = 1359, level = 41, animation = 867, pulses = 3),
+    DRAGON(id = 6739, level = 61, animation = 2846, pulses = 2);
 
     val animation = Animation(animation)
 

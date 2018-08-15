@@ -17,7 +17,7 @@ public abstract class PlayerSerializer {
 	/**
 	 * The spawn point for Players, on Tutorial Island.
 	 */
-	public static final Position TUTORIAL_ISLAND_SPAWN = new Position(3200, 3200);
+	public static final Position TUTORIAL_ISLAND_SPAWN = new Position(3212, 3423);
 
 	/**
 	 * The World this PlayerSerializer is for.

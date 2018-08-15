@@ -1,7 +1,6 @@
 package org.apollo.cache.map;
 
 import com.oldscape.tool.cache.Cache;
-import com.oldscape.tool.util.MapXTEA;
 import org.apollo.util.BufferUtil;
 
 import java.io.IOException;
@@ -27,8 +26,7 @@ public final class MapObjectsDecoder {
 	public static MapObjectsDecoder create(Cache cache, MapIndex index) throws IOException {
 
 		try {
-			int[] decryptionKeys = MapXTEA.getKey(index.getPackedCoordinates());
-			ByteBuffer data = cache.read(MapConstants.MAP_INDEX, index.getObjectFile(), decryptionKeys).getData();
+			ByteBuffer data = cache.read(MapConstants.MAP_INDEX, index.getObjectFile()).getData();
 
 			return new MapObjectsDecoder(data);
 

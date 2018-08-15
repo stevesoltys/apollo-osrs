@@ -3,4 +3,7 @@ plugin {
     authors = [
         "Gary Tierney",
     ]
+    dependencies = [
+        "api"
+    ]
 }

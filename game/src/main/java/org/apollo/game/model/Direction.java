@@ -217,6 +217,22 @@ public enum Direction {
 	}
 
 	/**
+	 * Gets a direction that is clockwise of this direction, given the number of times to rotate.
+	 *
+	 * @param count The number of times to apply the rotation.
+	 * @return The rotated direction.
+	 */
+	public Direction clockwise(int count) {
+		Direction direction = this;
+
+		for(int index = 0; index < count; index++) {
+			direction = direction.clockwise();
+		}
+
+		return direction;
+	}
+
+	/**
 	 * Gets the direction that is counter-clockwise of this direction.
 	 *
 	 * @return The counter-clockwise direction.
@@ -242,6 +258,22 @@ public enum Direction {
 		}
 
 		return NONE;
+	}
+
+	/**
+	 * Gets a direction that is counter-clockwise of this direction, given the number of times to rotate.
+	 *
+	 * @param count The number of times to apply the rotation.
+	 * @return The rotated direction.
+	 */
+	public Direction counterClockwise(int count) {
+		Direction direction = this;
+
+		for(int index = 0; index < count; index++) {
+			direction = direction.counterClockwise();
+		}
+
+		return direction;
 	}
 
 	/**
